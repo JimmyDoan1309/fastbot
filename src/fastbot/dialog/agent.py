@@ -7,10 +7,14 @@ from typing import Optional, Union
 
 
 class Agent:
-    def __init__(self, interpreter_model_path: str, flow_config_path: str, context_manager: Optional[ContextManager] = MemoryContextManager(), **kwargs):
-        self.interpreter = Interpreter.load(interpreter_model_path)
+    def __init__(self,
+                 interpreter_model_path: str,
+                 flow_config_path: str,
+                 context_manager: Optional[ContextManager] = MemoryContextManager(),
+                 **kwargs):
+        self.interpreter = Interpreter.load(interpreter_model_path, **kwargs)
         builder = DialogControlBuilder(context_manager)
-        self.controller = builder.load(flow_config_path)
+        self.controller = builder.load(flow_config_path, **kwargs)
 
     def local_test(self, user_id: str = 'default'):
         raw = input("User: ")

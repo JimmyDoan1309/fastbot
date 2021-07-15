@@ -20,7 +20,7 @@ class Interpreter:
     def __init__(self, components: List[BaseComponent] = [], **kwargs):
         self.pipeline = components
         self.override_intent = kwargs.get("override_intent", False)
-        self.override_intent_pattern = kwargs.get('override_intent_pattern', r'(?<=<)\w+(?=>)')
+        self.override_intent_pattern = kwargs.get('override_intent_pattern', r'(?<=<)(\w|\.|-)+(?=>)')
 
     def add_component(self, component: BaseComponent):
         self.pipeline.append(component)
@@ -46,11 +46,17 @@ class Interpreter:
     def _override_intent(self, message: Message):
         match = re.search(self.override_intent_pattern, message.text)
         if match:
-            message.intent = match.group
+            message.intent = match.group()
             return True
         return False
 
     def parse(self, message: Message):
+        # Skip process if incomming message has a pre-polulated intent
+        # This allow to setup intent trigger function that cannot be
+        # access with text (ex: UI button)
+        if message.intent:
+            return message.to_dict()
+
         is_override = False
         if self.override_intent:
             is_override = self._override_intent(message)
@@ -94,6 +100,6 @@ class Interpreter:
             component = load_component(component_type, path, component_metadata)
             components.append(component)
 
-        arguments = metadata.get('arguments')
+        arguments = metadata.get('arguments', {})
         arguments.update(kwargs)
         return cls(components, **arguments)
