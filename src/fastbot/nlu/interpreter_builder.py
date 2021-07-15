@@ -25,8 +25,9 @@ class InterpreterBuilder:
     @classmethod
     def loads(cls, config: Dict[Text, Any]):
         pipeline = config.get("pipeline", [])
+        arguments = config.get("arguments", {})
         pipeline = ComponentConfigSchema(many=True).load(pipeline)
-        interpreter = Interpreter()
+        interpreter = Interpreter(**arguments)
         for component_config in pipeline:
             component_class = get_component(component_config.type)
             component = component_class(**component_config.arguements, name=component_config.name)
