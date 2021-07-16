@@ -15,7 +15,6 @@ setuptools.setup(
         'sklearn',
         'scipy',
         'marshmallow',
-        'nltk',
         'pint',
         'pyyaml',
         'dnspython',

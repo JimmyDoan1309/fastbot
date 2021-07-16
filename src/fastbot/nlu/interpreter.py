@@ -29,6 +29,7 @@ class Interpreter:
         if self.verify_requirement(component):
             self.pipeline.append(component)
             self.pipeline_names.append(component.component_type)
+            component.pipeline_ref = self
 
     def train(self, data: NluData, clear_cache=True):
         if (clear_cache):
@@ -71,6 +72,16 @@ class Interpreter:
             for component in self.pipeline:
                 component.process(message)
         return message.to_dict()
+
+    def __iter__(self):
+        for component in self.pipeline_names:
+            yield component
+
+    def get_component(self, name: Text):
+        for component in self.pipeline:
+            if component.component_type == name:
+                return component
+        return None
 
     def save(self, path: Text):
         path = os.path.abspath(path)

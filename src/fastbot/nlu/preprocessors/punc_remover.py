@@ -1,9 +1,8 @@
 from . import Processor
 from fastbot.schema.nlu_data import NluData
 from fastbot.models.message import Message
-from nltk import RegexpTokenizer
 from typing import Text, Optional, Dict, Any
-
+import re
 
 ALL = 'all'
 CHARACTER = 'character'
@@ -18,12 +17,12 @@ class PunctuationRemover(Processor):
         self.mode = CHARACTER
         self.tokenizer = None
         if not puncs:
-            self.tokenizer = RegexpTokenizer(r'\w+')
+            self.tokenizer = re.compile(r'\w+')
             self.mode = ALL
 
     def _get_processed_text(self, text: Text):
         if self.mode == ALL:
-            words = self.tokenizer.tokenize(text)
+            words = [match for match in self.tokenizer.findall(text)]
             return ' '.join(words)
         else:
             for p in self.puncs:
