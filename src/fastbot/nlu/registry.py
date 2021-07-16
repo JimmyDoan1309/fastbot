@@ -4,8 +4,8 @@ from .classifiers.ensemble import EnsembleClassifier
 from .tokenizers.word_tokenizer import WordTokenizer
 from .tokenizers.vietnamese_tokenizer import VietnameseTokenizer
 from .vectorizers.fasttext import FasttextVectorizer
-from .vectorizers.count_vector import CountVectorizer
-from .vectorizers.tfidf_vector import TfidfVectorizer
+from .vectorizers.count import CountVectorizer
+from .vectorizers.tfidf import TfidfVectorizer
 from .preprocessors.casing import CasingProcessor
 from .preprocessors.punc_remover import PunctuationRemover
 from fastbot.utils.common import import_from_path

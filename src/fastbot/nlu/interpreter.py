@@ -8,22 +8,27 @@ from typing import List, Text
 import os
 import shutil
 import json
-import logging
 import re
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class Interpreter:
     def __init__(self, components: List[BaseComponent] = [], **kwargs):
-        self.pipeline = components
+        self.pipeline_names = []
+        self.pipeline = []
+        for component in components:
+            self.add_component(component)
         self.override_intent = kwargs.get("override_intent", False)
         self.override_intent_pattern = kwargs.get('override_intent_pattern', r'(?<=<)(\w|\.|-)+(?=>)')
 
+    def verify_requirement(self, component: BaseComponent):
+        if not (set(component.requires).issubset(set(self.pipeline_names))):
+            raise Exception(f'Component {component.component_type} requires {component.requires}!')
+        return True
+
     def add_component(self, component: BaseComponent):
-        self.pipeline.append(component)
+        if self.verify_requirement(component):
+            self.pipeline.append(component)
+            self.pipeline_names.append(component.component_type)
 
     def train(self, data: NluData, clear_cache=True):
         if (clear_cache):

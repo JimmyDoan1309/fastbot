@@ -20,7 +20,8 @@ setuptools.setup(
         'pyyaml',
         'dnspython',
         'pymongo',
-        'pyvi'
+        'pyvi',
+        'spacy'
     ],
     entry_points={
         'console_scripts': [

@@ -41,6 +41,6 @@ class CasingProcessor(Processor):
 
     @classmethod
     def load(cls, path: Text, metadata: Dict[Text, Any], **kwargs):
-        name = metadata['name']
+        name = metadata.get('name', cls.name)
         mode = metadata['mode']
         return cls(mode, name=name)

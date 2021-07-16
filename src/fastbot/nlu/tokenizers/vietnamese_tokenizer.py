@@ -23,4 +23,3 @@ class VietnameseTokenizer(Tokenizer):
     def process(self, message: Message):
         processed_text = vi_tokenize(message.nlu_cache.processed_text)
         message.nlu_cache.tokenized_text = self.tokenizer.tokenize(processed_text)
-
