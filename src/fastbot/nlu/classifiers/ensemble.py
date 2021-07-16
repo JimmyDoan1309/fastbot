@@ -4,11 +4,6 @@ from fastbot.schema.nlu_data import NluData
 from fastbot.models.message import Message
 from typing import Text, List, Dict, Any
 from sklearn.metrics import accuracy_score, f1_score
-import logging
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class EnsembleClassifier(Classifier):
@@ -35,7 +30,6 @@ class EnsembleClassifier(Classifier):
             print(f'Start training {c.name}')
             c.train(data)
             print(f'Done training {c.name}')
-                
 
     def evaluate(self, test_data: NluData):
         y_true, y_pred = self.predict_test_data(test_data)
@@ -70,7 +64,7 @@ class EnsembleClassifier(Classifier):
         for c in self.classifiers:
             y_true, y_pred = c.predict_test_data(test_data)
             classifiers_outputs[c.name] = y_pred
-        
+
         y_pred = []
         for i in range(len(test_data.all_samples)):
             if self.strategy == 'average':
@@ -87,11 +81,11 @@ class EnsembleClassifier(Classifier):
                         max_confidence = np.max(pred[i])
                         max_pred = pred[i]
                 y_pred.append(max_pred)
-        
+
         y_pred = np.asarray(y_pred)
         return y_true, y_pred
 
-    def _process_classifers_output(self, classifiers_output:Dict[Text,Any]):
+    def _process_classifers_output(self, classifiers_output: Dict[Text, Any]):
         intents = {}
         if self.strategy == 'average':
             # Scaled classifiers' results base on classifiers' weights
@@ -119,7 +113,7 @@ class EnsembleClassifier(Classifier):
 
         return intents
 
-    def predict(self, message:Message):
+    def predict(self, message: Message):
         classifiers_output = {}
         for c in self.classifiers:
             c_ranking = c.predict(message)

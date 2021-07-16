@@ -7,8 +7,33 @@ import pickle
 import numpy as np
 
 
-class FasttextVectorizer(Vectorizer):
-    name = 'FasttextVectorizer'
+class ExternalVectorizer(Vectorizer):
+    """
+    This Vectorizer call an external endpoint to retrieve the word vectors.
+    which allow for decoupling between intepreter and any big pretrained word2vec framework 
+        Ex: Fastext, Bert, Elmo, GPT, etc...
+
+    Which mean:
+        - Multiple bot can use the same SOTA word2vec without hoarding all the resources
+        - Bot can be deployed to lower-end system that cannot handle something like BERT
+            without sacrificing awesome benefit of SOTA word2vec
+            Given other components is also not very resource-intensive
+
+    Request format:
+        json: {
+            "raw_text": <original text>
+            "processed_text": <text that has been preprocessed by other components>
+            "tokenized_text": <List of word that has been tokenized in the text> 
+        }
+
+    Response:
+        The Word2Vec server is expected to return a pickle serialized numpy array 
+        (raw bytes) with shape [batch, word, dim]. And this Vectorizer will parse
+        the result using:
+            pickle.loads(bytes(response.content))
+    """
+
+    name = 'ExternalVectorizer'
 
     def __init__(self, endpoint: Text, **kwargs):
         super().__init__(**kwargs)

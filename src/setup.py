@@ -15,12 +15,12 @@ setuptools.setup(
         'sklearn',
         'scipy',
         'marshmallow',
-        'nltk',
         'pint',
         'pyyaml',
         'dnspython',
         'pymongo',
-        'pyvi'
+        'pyvi',
+        'spacy'
     ],
     entry_points={
         'console_scripts': [

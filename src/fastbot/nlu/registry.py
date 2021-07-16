@@ -3,11 +3,12 @@ from .classifiers.keras_models import ConvolutionClassifier
 from .classifiers.ensemble import EnsembleClassifier
 from .tokenizers.word_tokenizer import WordTokenizer
 from .tokenizers.vietnamese_tokenizer import VietnameseTokenizer
-from .vectorizers.fasttext import FasttextVectorizer
-from .vectorizers.count_vector import CountVectorizer
-from .vectorizers.tfidf_vector import TfidfVectorizer
+from .vectorizers.external import ExternalVectorizer
+from .vectorizers.count import CountVectorizer
+from .vectorizers.tfidf import TfidfVectorizer
 from .preprocessors.casing import CasingProcessor
 from .preprocessors.punc_remover import PunctuationRemover
+from .spacy import SpacyPipeline
 from fastbot.utils.common import import_from_path
 from typing import Text, Dict, Any
 
@@ -26,9 +27,11 @@ registered_component = [
     WordTokenizer,
     VietnameseTokenizer,
     # Vectorizers
-    FasttextVectorizer,
+    ExternalVectorizer,
     TfidfVectorizer,
-    CountVectorizer
+    CountVectorizer,
+    # Spacy
+    SpacyPipeline
 ]
 
 component_mapping = {component.__name__: component for component in registered_component}

@@ -14,5 +14,6 @@ def load_nlu_from_file(path: Text):
             raise Exception("Flow config must be .json or .yaml file")
     return NluDataSchema().load(data)
 
+
 def load_nlu_from_dict(data: Dict[Text, Any]):
     return NluDataSchema().load(data)
