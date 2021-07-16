@@ -43,7 +43,7 @@ class PunctuationRemover(Processor):
             'puncs': self.puncs
         }
 
-    def save(self):
+    def save(self, path: Text):
         pass
 
     @classmethod
