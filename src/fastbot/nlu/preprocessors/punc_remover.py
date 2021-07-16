@@ -47,7 +47,7 @@ class PunctuationRemover(Processor):
         pass
 
     @classmethod
-    def load(cls, metadata: Dict[Text, Any], **kwargs):
+    def load(cls, path: Text, metadata: Dict[Text, Any], **kwargs):
         name = metadata.get('name', cls.name)
         puncs = metadata['puncs']
         return cls(puncs, name=name)
