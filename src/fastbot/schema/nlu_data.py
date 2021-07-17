@@ -1,10 +1,11 @@
 from . import BaseSchema
-from marshmallow import Schema, fields, validates_schema, ValidationError
-from fastbot.models.nlu_data import Sample, NluData, EntityAnnotation
+from marshmallow import Schema, fields, validates_schema, validates, ValidationError
+from fastbot.models.nlu_data import Sample, NluData
+from fastbot.models.entity import Entity
 
 
-class EntityAnnotationSchema(BaseSchema):
-    __cls_model__ = EntityAnnotation
+class EntitySchema(BaseSchema):
+    __cls_model__ = Entity
     start = fields.Integer(required=True)
     end = fields.Integer(required=True)
     entity = fields.String(required=True)
@@ -18,7 +19,7 @@ class EntityAnnotationSchema(BaseSchema):
 class SampleSchema(BaseSchema):
     __cls_model__ = Sample
     text = fields.String()
-    entities = fields.List(fields.Nested(EntityAnnotationSchema), default=[])
+    entities = fields.List(fields.Nested(EntitySchema), default=[])
 
 
 class NluDataSchema(BaseSchema):

@@ -1,5 +1,5 @@
 from .component import BaseComponent
-from fastbot.schema.nlu_data import NluData, Sample
+from fastbot.models.nlu_data import NluData, Sample, TRAIN_DATA
 from fastbot.models.message import Message, Entity
 from typing import Text, List, Dict, Any, Optional, Union
 import spacy
@@ -33,7 +33,6 @@ class SpacyPipeline(BaseComponent):
         vectorization: bool = False,
         tokenization: bool = False,
         pos_tagging: bool = False,
-        dependency_parse: bool = False,
         auto_download: bool = True,
         **kwargs
     ):
@@ -44,7 +43,6 @@ class SpacyPipeline(BaseComponent):
         self.vectorization = vectorization
         self.tokenization = tokenization
         self.pos_tagging = pos_tagging
-        self.dependency_parse = dependency_parse
         self.auto_download = auto_download
         self.entity_dimensions = kwargs.get("entity_dimensions", [])
         self.model = self.load_model()
@@ -53,8 +51,7 @@ class SpacyPipeline(BaseComponent):
             self.vectorization = True
             self.tokenization = True
             self.pos_tagging = True
-            self.dependency_parse = True
-        elif self.pos_tagging or self.dependency_parse:
+        elif self.pos_tagging:
             self.tokenization = True
 
     def load_model(self):
@@ -73,7 +70,7 @@ class SpacyPipeline(BaseComponent):
 
     def _tokenize(self, doc: spacy.tokens.Doc, message: Union[Message, Sample]):
         if self.tokenization:
-            message.nlu_cache.tokenized_text = [token.text for token in doc]
+            message.nlu_cache.tokens = [token.text for token in doc]
 
     def _vectorize(self, doc: spacy.tokens.Doc, message: Union[Message, Sample]):
         if self.vectorization:
@@ -85,20 +82,57 @@ class SpacyPipeline(BaseComponent):
                 if ent.label_ in self.entity_dimensions or not self.entity_dimensions:
                     message.entities.append(Entity(
                         ent.label_,
-                        ent.text,
                         ent.start_char,
                         ent.end_char,
+                        ent.text,
                         self.component_type))
 
     def _pos_tagging(self, doc: spacy.tokens.Doc, message: Union[Message, Sample]):
         if self.pos_tagging:
-            message.nlu_cache.pos_tag = {token.text: token.pos_ for token in doc if token.pos_}
+            pos_tag = []
+            entity = 'None'
+            for token in doc:
+                features = {
+                    'word': token.text,
+                    'pos': token.pos_,
+                    'tag': token.tag_,
+                    'dep': token.dep_,
+                    'like_num': token.like_num,
+                    'like_email': token.like_email,
+                    'like_url': token.like_url,
+                    'lemma': token.lemma_,
+                    'start': token.idx,
+                    'end': token.idx+len(token),
+                    'ner': None
+                }
+                if (isinstance(message, Sample)):
+                    ner, entity = self._parse_custom_ner(message, token.text, entity)
+                    features['ner'] = ner
+                pos_tag.append(features)
+            message.nlu_cache.pos_tag = pos_tag
+
+    def _parse_custom_ner(self,
+                          message: Sample,
+                          token: Text,
+                          prev_entity: Text):
+        for e in message.entities:
+            if e.extractor != TRAIN_DATA:
+                continue
+            span = message.text[e.start: e.end]
+            if token in span:
+                if prev_entity == e.entity:
+                    return f'I-{e.entity}', e.entity
+                else:
+                    return f'B-{e.entity}', e.entity
+        return 'O', 'None'
 
     def train(self, data: NluData):
         for sample in data.all_samples:
             doc = self.model(sample.nlu_cache.processed_text)
             self._tokenize(doc, sample)
             self._vectorize(doc, sample)
+            self._extract_entities(doc, sample)
+            self._pos_tagging(doc, sample)
 
     def process(self, message: Message):
         doc = self.model(message.nlu_cache.processed_text)
@@ -117,7 +151,6 @@ class SpacyPipeline(BaseComponent):
             "vectorization": self.vectorization,
             "tokenization": self.tokenization,
             "pos_tagging": self.pos_tagging,
-            "dependency_parse": self.dependency_parse,
             "auto_download": self.auto_download,
             "entity_dimensions": self.entity_dimensions,
         }

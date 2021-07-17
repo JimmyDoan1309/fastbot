@@ -3,20 +3,22 @@ from typing import List, Text, Dict, Any, Optional
 
 class Entity:
     def __init__(self,
-                 entity: Text, value: Any,
+                 entity: Text,
                  start: int, end: int,
+                 value: Optional[Any] = None,
                  extractor: Optional[Any] = None,
                  unit: Optional[Text] = None,
                  text: Optional[Text] = None,
+                 confidence: Optional[float] = 1.0,
                  ):
-
         self.entity = entity
-        self.value = value
         self.start = start
         self.end = end
+        self.value = value
         self.unit = unit
         self.text = text
         self.extractor = extractor
+        self.confidence = confidence
 
     def to_json(self):
         body = {
@@ -24,13 +26,13 @@ class Entity:
             'value': self.value,
             'start': self.start,
             'end': self.end,
-            'extractor': self.extractor
+            'extractor': self.extractor,
+            'confidence': self.confidence
         }
         if self.unit:
             body['unit'] = self.unit
         if self.text:
             body['text'] = self.text
-
         return body
 
     def __repr__(self):

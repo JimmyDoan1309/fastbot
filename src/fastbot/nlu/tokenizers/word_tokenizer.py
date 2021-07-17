@@ -16,7 +16,7 @@ class WordTokenizer(Tokenizer):
     def train(self, data: NluData):
         for samples in data.intents.values():
             for sample in samples:
-                sample.nlu_cache.tokenized_text = [match for match in self.tokenizer.findall(sample.nlu_cache.processed_text)]
+                sample.nlu_cache.tokens = [match for match in self.tokenizer.findall(sample.nlu_cache.processed_text)]
 
     def process(self, message: Message):
-        message.nlu_cache.tokenized_text = [match for match in self.tokenizer.findall(message.nlu_cache.processed_text)]
+        message.nlu_cache.tokens = [match for match in self.tokenizer.findall(message.nlu_cache.processed_text)]

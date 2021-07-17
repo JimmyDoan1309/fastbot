@@ -22,7 +22,7 @@ class RegexExtractor(Extractor):
         self.entity_patterns = entity_config.patterns
 
     def convert_to_entity(self, value: Any, start: int, end: int):
-        return Entity(self.entity_name, value, start, end, self.name)
+        return Entity(self.entity_name, start, end, value, self.name)
 
     def process(self, message: Message):
         text = message.text

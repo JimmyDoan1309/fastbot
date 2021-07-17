@@ -9,6 +9,7 @@ from .vectorizers.tfidf import TfidfVectorizer
 from .preprocessors.casing import CasingProcessor
 from .preprocessors.punc_remover import PunctuationRemover
 from .spacy import SpacyPipeline
+from .ner.crf import CrfExtractor
 from fastbot.utils.common import import_from_path
 from typing import Text, Dict, Any
 
@@ -31,7 +32,9 @@ registered_component = [
     TfidfVectorizer,
     CountVectorizer,
     # Spacy
-    SpacyPipeline
+    SpacyPipeline,
+    # Ner
+    CrfExtractor,
 ]
 
 component_mapping = {component.__name__: component for component in registered_component}

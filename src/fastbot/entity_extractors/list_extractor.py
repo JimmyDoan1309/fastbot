@@ -24,7 +24,7 @@ class ListExtractor(Extractor):
         self.case_sensitive = entity_config.case_sensitive
 
     def convert_to_entity(self, value: Any, text: Text, start: int, end: int):
-        return Entity(self.entity_name, value, start, end, self.name, text=text)
+        return Entity(self.entity_name, start, end, value, self.name, text=text)
 
     def process(self, message: Message):
         text = message.text

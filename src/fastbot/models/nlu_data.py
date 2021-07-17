@@ -1,30 +1,23 @@
 from typing import Text, List, Dict, Any
 from .cache import NluCache
+from .entity import Entity
 
 
-class EntityAnnotation:
-    def __init__(self, start: int, end: int, entity: Text):
-        self.start = start
-        self.end = end
-        self.entity = entity
-
-    @property
-    def spacy_format(self):
-        return (self.start, self.end, self.entity)
+TRAIN_DATA = 'TrainData'
 
 
 class Sample:
-    def __init__(self, text: Text, entities: List[EntityAnnotation] = []):
-        self.full_text = text
+    def __init__(self, text: Text, entities: List[Entity] = []):
+        self.text = text
         self.entities = entities
+        self.intent = None
         self.nlu_cache = NluCache(text)
-
-    @property
-    def spacy_format(self):
-        return {"entities": [entity.spacy_format for entity in self.entities]}
+        for e in self.entities:
+            e.value = self.text[e.start:e.end]
+            e.extractor = TRAIN_DATA
 
     def __repr__(self):
-        return self.full_text
+        return self.text
 
 
 class NluDataStatus:
@@ -37,15 +30,25 @@ class NluData:
     def __init__(self, intents: Dict[Text, List[Sample]]):
         self.intents = intents
         self.status = NluDataStatus()
+        for intent, samples in self.intents.items():
+            for sample in samples:
+                sample.intent = intent
 
     def clear_cache(self):
         for samples in self.intents.values():
             for sample in samples:
-                sample.nlu_cache = NluCache(sample.full_text)
+                sample.nlu_cache = NluCache(sample.text)
+
+    @property
+    def intent_names(self):
+        return list(self.intents.keys())
 
     @property
     def all_intents(self):
-        return list(self.intents.keys())
+        tmp = []
+        for intent, samples in self.intents.items():
+            tmp += [intent]*len(samples)
+        return tmp
 
     @property
     def all_samples(self):

@@ -37,7 +37,7 @@ class ConvolutionClassifier(Classifier):
         oh[self.intent2idx[intent]] = 1
         return oh
 
-    def _prepared_data(self, data: NluData, create_label_mapping: bool=False):
+    def _prepared_data(self, data: NluData, create_label_mapping: bool = False):
         if create_label_mapping:
             self._create_label_mapping(data)
 
@@ -93,7 +93,6 @@ class ConvolutionClassifier(Classifier):
                               verbose=self.verbose,
                               callbacks=[early_stop])
 
-        
         hist = hist.history
         print(f'{self.name} finishes training with loss = {hist["loss"][-1]}, acc = {hist["acc"][-1]}')
 
@@ -103,13 +102,13 @@ class ConvolutionClassifier(Classifier):
 
         X, y_true = self._prepared_data(test_data)
         y_pred = self.model.predict(X)  # pylint: disable=no-member
-        y_true = np.argmax(y_true, axis=-1)  
+        y_true = np.argmax(y_true, axis=-1)
         return y_true, y_pred
 
     def evaluate(self, test_data: NluData):
         y_true, y_pred = self.predict_test_data(test_data)
-        y_pred = np.argmax(y_pred, axis=-1)  
-        
+        y_pred = np.argmax(y_pred, axis=-1)
+
         texts = [sample.full_text for sample in test_data.all_samples]
 
         misses = []

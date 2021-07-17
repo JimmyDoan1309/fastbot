@@ -34,7 +34,7 @@ class EnsembleClassifier(Classifier):
     def evaluate(self, test_data: NluData):
         y_true, y_pred = self.predict_test_data(test_data)
         y_pred = np.argmax(y_pred, axis=-1)
-        texts = [sample.full_text for sample in test_data.all_samples]
+        texts = [sample.text for sample in test_data.all_samples]
 
         misses = []
         for text, pred, true in zip(texts, y_pred, y_true):
@@ -68,14 +68,14 @@ class EnsembleClassifier(Classifier):
         y_pred = []
         for i in range(len(test_data.all_samples)):
             if self.strategy == 'average':
-                avg_pred = np.zeros((len(test_data.all_intents)))
+                avg_pred = np.zeros((len(test_data.intent_names)))
                 for j, pred in enumerate(classifiers_outputs.values()):
                     avg_pred += pred[i] * self.weights[j]
                 y_pred.append(avg_pred)
 
             elif self.strategy == 'max':
                 max_confidence = 0
-                max_pred = np.zeros((len(test_data.all_intents)))
+                max_pred = np.zeros((len(test_data.intent_names)))
                 for pred in classifiers_outputs.values():
                     if np.max(pred[i]) > max_confidence:
                         max_confidence = np.max(pred[i])

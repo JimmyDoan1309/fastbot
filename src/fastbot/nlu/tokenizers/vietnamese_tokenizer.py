@@ -18,8 +18,8 @@ class VietnameseTokenizer(Tokenizer):
         for samples in data.intents.values():
             for sample in samples:
                 processed_text = vi_tokenize(sample.nlu_cache.processed_text)
-                sample.nlu_cache.tokenized_text = [match for match in self.tokenizer.findall(processed_text)]
+                sample.nlu_cache.tokens = [match for match in self.tokenizer.findall(processed_text)]
 
     def process(self, message: Message):
         processed_text = vi_tokenize(message.nlu_cache.processed_text)
-        message.nlu_cache.tokenized_text = [match for match in self.tokenizer.findall(processed_text)]
+        message.nlu_cache.tokens = [match for match in self.tokenizer.findall(processed_text)]

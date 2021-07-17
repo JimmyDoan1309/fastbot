@@ -19,9 +19,9 @@ class CasingProcessor(Processor):
     def train(self, data: NluData):
         for sample in data.all_samples:
             if self.mode == LOWER:
-                sample.nlu_cache.processed_text = sample.full_text.lower()
+                sample.nlu_cache.processed_text = sample.text.lower()
             else:
-                sample.nlu_cache.processed_text = sample.full_text.upper()
+                sample.nlu_cache.processed_text = sample.text.upper()
 
     def process(self, message: Message):
         if self.mode == LOWER:

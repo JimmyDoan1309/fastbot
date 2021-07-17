@@ -125,7 +125,7 @@ class CompositeEntitiesExtractor(Extractor):
         return filtered_entites + all_composites
 
     def convert_to_entity(self, value: Any, start: int, end: int):
-        return Entity(self.entity_name, value, start, end, self.name)
+        return Entity(self.entity_name, start, end, value, self.name)
 
     @staticmethod
     def _seperate_key_pattern(pattern: Text):

@@ -12,8 +12,8 @@ class SklearnClassifier(Classifier):
         super().__init__(**kwargs)
         self._reduce_method = kwargs.get('reduce_method', 'mean')
         assert self._reduce_method in ['mean', 'sum'], "reduce method can only be `mean` or `sum`"
-        self._use_vector = kwargs.get('use_vector', 'dense')
-        assert self._use_vector in ['dense', 'sparse'], "can only choose between `dense` or `sparse` vector"
+        # self._use_vector = kwargs.get('use_vector', 'dense')
+        # assert self._use_vector in ['dense', 'sparse'], "can only choose between `dense` or `sparse` vector"
         self.model = None
 
     def _reduce(self, words_embedding: np.ndarray):
@@ -33,19 +33,23 @@ class SklearnClassifier(Classifier):
         else:
             return words_embedding.sum(axis=0)
 
-    def _prepared_data(self, data: NluData, create_label_mapping: bool=False):
+    def _concat_dense_sparse(self, dense_vector: np.ndarray, sparse_vector: any):
+        if sparse_vector is not None and dense_vector is not None:
+            return np.concatenate((self._reduce(dense_vector), sparse_vector.toarray()[0]), axis=0)
+        elif sparse_vector is not None:
+            return sparse_vector.toarray()[0]
+        elif dense_vector is not None:
+            return self._reduce(dense_vector)
+
+    def _prepared_data(self, data: NluData, create_label_mapping: bool = False):
         if create_label_mapping:
             self._create_label_mapping(data)
 
-        X = []
-        y = []
-        for intent, samples in data.intents.items():
-            if self._use_vector == 'dense':
-                data = [self._reduce(sample.nlu_cache.dense_embedding_vector) for sample in samples]
-            else:
-                data = [sample.nlu_cache.sparse_embedding_vector.toarray()[0] for sample in samples]
-            X += data
-            y += [self.intent2idx[intent]]*len(samples)
+        X = [self._concat_dense_sparse(
+            sample.nlu_cache.dense_embedding_vector,
+            sample.nlu_cache.sparse_embedding_vector)
+            for sample in data.all_samples]
+        y = [self.intent2idx[intent] for intent in data.all_intents]
         return X, y
 
     def train(self, data: NluData):
@@ -59,10 +63,10 @@ class SklearnClassifier(Classifier):
 
     def evaluate(self, test_data: NluData):
         y_true, y_pred = self.predict_test_data(test_data)
-        y_pred = np.argmax(y_pred,axis=-1)
+        y_pred = np.argmax(y_pred, axis=-1)
 
-        texts = [sample.full_text for sample in test_data.all_samples]
-        
+        texts = [sample.text for sample in test_data.all_samples]
+
         misses = []
         for text, pred, true in zip(texts, y_pred, y_true):
             if (pred != true):
@@ -86,11 +90,7 @@ class SklearnClassifier(Classifier):
         return results
 
     def predict(self, message: Message):
-        if self._use_vector == 'dense':
-            embed = self._reduce(message.nlu_cache.dense_embedding_vector)
-        else:
-            embed = message.nlu_cache.sparse_embedding_vector.toarray()[0]
-
+        embed = self._concat_dense_sparse(message.nlu_cache.dense_embedding_vector, message.nlu_cache.sparse_embedding_vector)
         probs = self.model.predict_proba([embed])[0]
 
         ranking = []

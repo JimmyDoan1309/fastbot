@@ -13,6 +13,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'sklearn',
+        'sklearn_crfsuite',
         'scipy',
         'marshmallow',
         'pint',

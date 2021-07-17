@@ -86,7 +86,7 @@ class DucklingExtractor(Extractor):
         return extracted
 
     def convert_to_entity(self, value: Any, entity: Text, start: int, end: int, unit: Text = None):
-        return Entity(entity, value, start, end, self.name, unit)
+        return Entity(entity, start, end, value, self.name, unit)
 
     def _extract_values_to_entities(self, match):
         entities = []
