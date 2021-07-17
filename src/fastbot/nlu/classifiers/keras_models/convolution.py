@@ -191,7 +191,7 @@ class ConvolutionClassifier(Classifier):
 
     def save(self, path: Text):
         if (self._model_mode != 'training'):
-            raise Exception('Cannot save inference model')
+            return
 
         try:
             import tensorflow as tf

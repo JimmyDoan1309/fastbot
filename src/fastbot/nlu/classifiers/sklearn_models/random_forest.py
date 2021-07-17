@@ -10,4 +10,4 @@ class ForestClassifier(SklearnClassifier):
 
     def __init__(self, config: Dict[Text, Any] = {}, **kwargs):
         super().__init__(**kwargs)
-        self.model = RandomForestClassifier(**config)
+        self.model = kwargs.get('model', RandomForestClassifier(**config))

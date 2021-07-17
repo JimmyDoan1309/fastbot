@@ -2,7 +2,9 @@ from .. import Classifier
 from fastbot.schema.nlu_data import NluData
 from fastbot.models.message import Message
 from sklearn.metrics import accuracy_score, f1_score
+from typing import Text, List, Dict, Any
 import numpy as np
+import pickle
 
 
 class SklearnClassifier(Classifier):
@@ -10,10 +12,8 @@ class SklearnClassifier(Classifier):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._reduce_method = kwargs.get('reduce_method', 'mean')
-        assert self._reduce_method in ['mean', 'sum'], "reduce method can only be `mean` or `sum`"
-        # self._use_vector = kwargs.get('use_vector', 'dense')
-        # assert self._use_vector in ['dense', 'sparse'], "can only choose between `dense` or `sparse` vector"
+        self.reduce_method = kwargs.get('reduce_method', 'mean')
+        assert self.reduce_method in ['mean', 'sum'], "reduce method can only be `mean` or `sum`"
         self.model = None
 
     def _reduce(self, words_embedding: np.ndarray):
@@ -28,7 +28,7 @@ class SklearnClassifier(Classifier):
         """
         if len(words_embedding.shape) == 1:
             return words_embedding
-        if self._reduce_method == 'mean':
+        if self.reduce_method == 'mean':
             return words_embedding.mean(axis=0)
         else:
             return words_embedding.sum(axis=0)
@@ -110,3 +110,34 @@ class SklearnClassifier(Classifier):
         if (message.intents_ranking[0]['score'] > self.confident_threshold and
                 message.intents_ranking[0]['score'] - message.intents_ranking[1]['score'] > self.ambiguity_threshold):
             message.intent = message.intents_ranking[0]['name']
+
+    def get_metadata(self):
+        metadata = {
+            'name': self.name,
+            'type': self.component_type,
+            'intents': self.intents,
+            'confident_threshold': self.confident_threshold,
+            'ambiguity_threshold': self.ambiguity_threshold,
+            'reduce_method': self.reduce_method,
+        }
+        return metadata
+
+    def save(self, path: Text):
+        with open(f'{path}/{self.name}.pkl', 'wb') as fp:
+            pickle.dump(self.model, fp)
+
+    @classmethod
+    def load(cls, path: Text, metadata: Dict[Text, Any], **kwargs):
+        with open(f'{path}/{metadata["name"]}.pkl', 'rb') as fp:
+            model = pickle.load(fp)
+        classifier = cls(model=model)
+        classifier._update_properties(metadata)
+        return classifier
+
+    def _update_properties(self, metadata: Dict[Text, Any]):
+        self.name = metadata['name']
+        self.intents = metadata['intents']
+        self.number_of_intent = len(self.intents)
+        self.reduce_method = metadata['reduce_method']
+        self.intent2idx = {intent: idx for idx, intent in enumerate(self.intents)}
+        self.idx2intent = {idx: intent for intent, idx in self.intent2idx.items()}

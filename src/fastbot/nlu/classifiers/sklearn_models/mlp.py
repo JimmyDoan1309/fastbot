@@ -10,4 +10,4 @@ class NeuralNetClassifier(SklearnClassifier):
 
     def __init__(self, config: Dict[Text, Any] = {}, **kwargs):
         super().__init__(**kwargs)
-        self.model = MLPClassifier(**config)
+        self.model = kwargs.get('model', MLPClassifier(**config))

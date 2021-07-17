@@ -3,7 +3,7 @@ from fastbot.schema.nlu_data import NluData
 from fastbot.models import Message, Entity
 from typing import Dict, Text, Any, List, Optional, Tuple
 import sklearn_crfsuite
-import copy
+import pickle
 
 
 class CrfExtractor(NamedEntities):
@@ -21,9 +21,8 @@ class CrfExtractor(NamedEntities):
 
     def __init__(self, config: Dict[Text, Any] = {}, confidence_threshold: int = 0.7, **kwargs):
         super().__init__(**kwargs)
-        _config = copy.copy(self.default)
-        _config.update(config)
-        self.model = sklearn_crfsuite.CRF(**_config)
+        args = {**self.default, **config}
+        self.model = kwargs.get("model", sklearn_crfsuite.CRF(**args))
         self.confidence_threshold = confidence_threshold
 
     def train(self, data: NluData):
@@ -54,7 +53,7 @@ class CrfExtractor(NamedEntities):
                 entity['start'],
                 entity['end'],
                 text,
-                self.name,
+                self.component_type,
                 text=text,
                 confidence=entity['confidence']
             ))
@@ -139,3 +138,20 @@ class CrfExtractor(NamedEntities):
 
     def _sent2labels(self, sent: List[Dict]):
         return [sent['ner'] for sent in sent]
+
+    def get_metadata(self):
+        return {
+            'name': self.name,
+            'type': self.component_type,
+            'confidence_threshold': self.confidence_threshold,
+        }
+
+    def save(self, path: Text):
+        with open(f'{path}/{self.name}.pkl', 'wb') as fp:
+            pickle.dump(self.model, fp)
+
+    @classmethod
+    def load(cls, path: Text, metadata: Dict[Text, Any], **kwargs):
+        with open(f'{path}/{metadata["name"]}.pkl', 'rb') as fp:
+            model = pickle.load(fp)
+        return cls(confidence_threshold=metadata["confidence_threshold"], model=model)

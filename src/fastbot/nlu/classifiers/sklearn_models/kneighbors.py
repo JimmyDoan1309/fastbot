@@ -15,4 +15,4 @@ class KnnClassifier(SklearnClassifier):
     def __init__(self, config: Dict[Text, Any] = {}, **kwargs):
         super().__init__(**kwargs)
         args = {**self.default, **config}
-        self.model = KNeighborsClassifier(**args)
+        self.model = kwargs.get('model', KNeighborsClassifier(**args))

@@ -2,9 +2,10 @@ from . import Vectorizer
 from fastbot.schema.nlu_data import NluData
 from fastbot.models.message import Message
 from typing import Text, List, Dict, Any
-import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer as CVect
 from scipy.sparse import hstack
+import numpy as np
+import pickle
 
 
 class CountVectorizer(Vectorizer):
@@ -12,7 +13,7 @@ class CountVectorizer(Vectorizer):
 
     def __init__(self, config: Dict[Text, Any] = {}, **kwargs):
         super().__init__(**kwargs)
-        self.model = CVect(**config)
+        self.model = kwargs.get("model", CVect(**config))
 
     def train(self, data: NluData):
         texts = [sample.nlu_cache.processed_text for sample in data.all_samples]
@@ -47,3 +48,13 @@ class CountVectorizer(Vectorizer):
             ))
         else:
             message.nlu_cache.sparse_embedding_vector = embed
+
+    def save(self, path: Text):
+        with open(f'{path}/{self.name}.pkl', 'wb') as fp:
+            pickle.dump(self.model, fp)
+
+    @classmethod
+    def load(cls, path: Text, metadata: Dict[Text, Any], **kwargs):
+        with open(f'{path}/{metadata["name"]}.pkl', 'rb') as fp:
+            model = pickle.load(fp)
+        return cls(model=model)
