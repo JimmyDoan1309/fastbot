@@ -58,24 +58,24 @@ class CrfExtractor(NamedEntities):
                 confidence=entity['confidence']
             ))
 
-        for i, (f, (r, s)) in enumerate(zip(message.nlu_cache.pos_tag, result), 1):
-            if r.startswith('B'):
+        for i, (feature, (result, score)) in enumerate(zip(message.nlu_cache.pos_tag, result), 1):
+            if result.startswith('B'):
                 if entity_name != 'None':
                     _add_entity()
-                entity_name = '-'.join(r.split('-')[1:])
+                entity_name = '-'.join(result.split('-')[1:])
                 entity = {
                     'entity': entity_name,
-                    'start': f['start'],
-                    'end': f['end'],
+                    'start': feature['start'],
+                    'end': feature['end'],
                     'extractor': 'CrfExtractor',
-                    'confidence': s}
-            elif r.startswith('O'):
+                    'confidence': score}
+            elif result.startswith('O'):
                 if entity_name != 'None':
                     _add_entity()
                 entity_name = 'None'
                 entity = {}
-            elif r.startswith('I'):
-                entity['end'] = f['end']
+            elif result.startswith('I'):
+                entity['end'] = feature['end']
 
             if i == len(result):
                 if entity_name != 'None':
