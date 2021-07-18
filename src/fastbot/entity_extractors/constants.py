@@ -21,7 +21,7 @@ REVERSED_ENTITY_MAPPING = {v: k for k, v in ENTITY_MAPPING.items()}
 
 DUCKLING_OTHER_ENTITIES = ['number', 'email', 'url', 'ordinal', 'currency']
 DUCKLING_MEASURE_ENTITIES = ['weight', 'volume', 'duration', 'temperature', 'length']
-DUCKLING_TIME_ENTITIES = ['time', 'date', 'datetime', 'date_period']
+DUCKLING_TIME_ENTITIES = ['time', 'date', 'datetime', 'datetime_interval']
 DUCKLING_ENTITIES = DUCKLING_TIME_ENTITIES+DUCKLING_MEASURE_ENTITIES+DUCKLING_OTHER_ENTITIES
 
 

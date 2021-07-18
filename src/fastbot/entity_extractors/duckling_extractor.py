@@ -20,7 +20,7 @@ class DucklingExtractor(Extractor):
     Change dimension name
         quantity        -> weight
         distance        -> length
-        time            -> time | date | datetime | date_period
+        time            -> time | date | datetime | datetime_interval
         amount-of-money -> currency
     """
 
@@ -42,7 +42,7 @@ class DucklingExtractor(Extractor):
         def _duckling_dimension():
             temp_dims = []
             for dim in self.dimensions:
-                # break duckling `time` -> time, date, datetime, date_period
+                # break duckling `time` -> time, date, datetime, datetime_interval
                 if dim in DUCKLING_TIME_ENTITIES:
                     temp_dims.append('time')
                 else:
@@ -90,15 +90,28 @@ class DucklingExtractor(Extractor):
             extracted.extend(self._extract_values_to_entities(match))
         return extracted
 
+    def _convert_datetime(self, datetime_string:Text, grain: Text):
+        if not datetime_string:
+            return None, None, None
+        date = datetime_string.split('T')[0]
+        time = None
+        if grain in ['hour', 'minute']:
+            time = datetime_string.split('T')[1]
+        datetime = {'date': date, 'time': time}
+        return datetime, date, time
+        
+
     def convert_to_entity(self, value: Any, entity: Text, start: int, end: int, unit: Text = None):
         return Entity(entity, start, end, value, self.name, unit)
 
     def _extract_values_to_entities(self, match):
         entities = []
-        entity_type, value_type, value, unit = self._extract_value(match)
+        entity_type, value_type, value, unit, grain = self._extract_value(match)
         if value_type == 'interval':
             if entity_type == 'time':
-                entities.append(self.convert_to_entity(value, 'date_period', match['start'], match['end']))
+                from_date = self._convert_datetime(value.get('from'), grain)[0]
+                to_date = self._convert_datetime(value.get('to'), grain)[0]
+                entities.append(self.convert_to_entity({'from': from_date, 'to': to_date}, 'datetime_interval', match['start'], match['end'], unit=grain))
             else:
                 if unit == 'degree':
                     # change temperature to default unit
@@ -112,12 +125,11 @@ class DucklingExtractor(Extractor):
                     entities.append(self.convert_to_entity(value, entity_type, match['start'], match['end'], unit=unit))
         else:
             if entity_type == 'time':
-                datetime = dateparser(value)
-                date = datetime.date()
-                time = datetime.time()
-                entities.append(self.convert_to_entity(datetime.isoformat(), 'datetime', match['start'], match['end']))
-                entities.append(self.convert_to_entity(str(date), 'date', match['start'], match['end']))
-                entities.append(self.convert_to_entity(str(time), 'time', match['start'], match['end']))
+                datetime, date, time = self._convert_datetime(value, grain)
+                entities.append(self.convert_to_entity(datetime, 'datetime', match['start'], match['end'], unit=grain))
+                entities.append(self.convert_to_entity(date, 'date', match['start'], match['end'], unit=grain))
+                if time:
+                    entities.append(self.convert_to_entity(time, 'time', match['start'], match['end'], unit=grain))
             else:
                 if unit == 'degree':
                     # change temperature to default unit
@@ -139,6 +151,7 @@ class DucklingExtractor(Extractor):
             to_value = match['value'].get('to', {}).get('value')
             t1 = match['value'].get('to', {}).get('unit')
             t2 = match['value'].get('from', {}).get('unit')
+            grain = match['value'].get('from', {}).get('grain')
             unit = t1 if t1 else t2
             value = {
                 'to': to_value,
@@ -147,7 +160,8 @@ class DucklingExtractor(Extractor):
         else:
             unit = match['value'].get('unit')
             value = match['value']['value']
-        return entity_type, value_type, value, unit
+            grain = match['value'].get('grain')
+        return entity_type, value_type, value, unit, grain
 
     def process(self, message: Message):
         text = message.text
