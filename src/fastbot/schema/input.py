@@ -8,6 +8,7 @@ class InputMappingSchema(BaseSchema):
     __cls_model__ = InputMapping
     itype = fields.String(required=True)
     values = fields.Raw()
+    always_ask = fields.Boolean(default=False)
     multiple = fields.Boolean(default=True)
     drop = fields.Boolean(default=True)
 

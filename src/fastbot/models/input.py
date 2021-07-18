@@ -7,6 +7,7 @@ class InputMapping:
     Attributes:
         - itype: input mapping type [entity, intent or text]
         - values: applied for itype = [entity, intent], what entities/intents will map to this input slot
+        - always_ask: always explicitly ask for input instead infer from current message at input mapping level
         - multiple: applied for itype = entity. Allow for multiple instances of a entity
         - drop: applied for itype = entity. Whether or not to removed entity instances from cache,
                 so future input slots that also required this entity type cannot be refer to the same
@@ -16,14 +17,18 @@ class InputMapping:
 
     def __init__(self, itype: Text,
                  values: Union[List[Text], Text] = None,
+                 always_ask: bool = False,
                  multiple: bool = True,
                  drop: bool = True):
         if (itype == 'entity' and not values):
             raise Exception('A list of entity must be provided for `entity` mapping')
         self.itype = itype
         self.values = values
+        self.always_ask = always_ask
         self.multiple = multiple
         self.drop = drop
+        if itype == 'text':
+            self.always_ask = True
 
 
 class InputConfig:

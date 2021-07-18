@@ -169,7 +169,9 @@ class InputsCollector(BaseNode):
         if value:
             validated_value = validator(imap.itype, value, context)
             if validated_value:
-                inputs[input_name] = validated_value
+                # Prevent input override by different input mapping
+                if not inputs.get(input_name):
+                    inputs[input_name] = validated_value
         else:
             default_value = self._get_default(input_name, imap, iconfig, context)
             if default_value:
@@ -192,6 +194,9 @@ class InputsCollector(BaseNode):
             # validator take 3 arguments: itype, value, context
             validator = iconfig.validator if iconfig.validator != None else lambda t, v, c: v
             for imap in iconfig.maps:
+                if node_state['step_count'][iconfig.name] == 0 and imap.always_ask:
+                    continue
+
                 if imap.itype == ITYPE.TEXT:
                     text = context.turn_context.message.text
                     self._validate_and_assign(inputs, input_name, imap, iconfig, text, validator, context)
