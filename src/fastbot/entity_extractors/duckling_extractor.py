@@ -6,6 +6,10 @@ from dateutil.parser import parse as dateparser
 from urllib import parse
 import requests
 import json
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 class DucklingExtractor(Extractor):
@@ -69,7 +73,8 @@ class DucklingExtractor(Extractor):
             resp = requests.post(self.endpoint, data=payload, headers=headers)
             resp.raise_for_status()
             return resp.json()
-        except Exception:
+        except Exception as e:
+            log.error(e)
             return []
 
     def _remove_irrelevant_entities(self, entities: List[Dict[Text, Any]]):
