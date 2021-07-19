@@ -29,7 +29,7 @@ class DialogControlBuilder:
     def __init__(self, context: Optional[ContextManager] = MemoryContextManager(), **kwargs):
         self.context = context
 
-    def load(self, path: Text, **kwargs):
+    def load(self, path: Text, **kwargs) -> DialogController:
         """
         Path to the file contain the flow config
         """
@@ -42,7 +42,7 @@ class DialogControlBuilder:
                 raise Exception("Flow config must be .json or .yaml file")
         return self.loads(config, **kwargs)
 
-    def loads(self, dialog_config: Dict[Text, Any], **kwargs):
+    def loads(self, dialog_config: Dict[Text, Any], **kwargs) -> DialogController:
         nodes = dialog_config["nodes"]
         config = dialog_config.get("config", {})
         entities = dialog_config.get("entities", {})

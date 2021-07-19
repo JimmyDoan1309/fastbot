@@ -10,6 +10,8 @@ class Entity:
                  unit: Optional[Text] = None,
                  text: Optional[Text] = None,
                  confidence: Optional[float] = 1.0,
+                 role: Optional[Text] = None,
+                 from_entity: Optional[Text] = None,
                  ):
         self.entity = entity
         self.start = start
@@ -19,8 +21,10 @@ class Entity:
         self.text = text
         self.extractor = extractor
         self.confidence = confidence
+        self.role = role
+        self.from_entity = from_entity
 
-    def to_json(self):
+    def __dict__(self):
         body = {
             'entity': self.entity,
             'value': self.value,
@@ -33,10 +37,14 @@ class Entity:
             body['unit'] = self.unit
         if self.text:
             body['text'] = self.text
+        if self.from_entity:
+            body['from_entity'] = self.from_entity
+        if self.role:
+            body['role'] = self.role
         return body
 
     def __repr__(self):
-        return str(self.to_json())
+        return self.__dict__()
 
 
 class MeasurementEntityConfig:

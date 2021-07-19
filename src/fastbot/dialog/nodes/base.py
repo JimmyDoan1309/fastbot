@@ -2,7 +2,7 @@ import random
 from typing import Text, List, Dict, Any, Callable, Union
 from fastbot.models.message import Message
 from fastbot.dialog.context import ContextManager
-from .status import NodeStatus
+from .status import NodeStatus, NodeResult
 
 
 class BaseNode():
@@ -16,7 +16,7 @@ class BaseNode():
     def to_dict(self):
         return {'name': self.name}
 
-    def on_enter(self, context: ContextManager):
+    def on_enter(self, context: ContextManager) -> NodeResult:
         """
         Run once when node is enter. 
         Return:
@@ -27,7 +27,7 @@ class BaseNode():
         """
         pass
 
-    def on_message(self, context: ContextManager):
+    def on_message(self, context: ContextManager) -> NodeResult:
         """
         Run every time recieve a message
         Return:
@@ -35,7 +35,7 @@ class BaseNode():
         """
         raise NotImplementedError("Child class must implement this.")
 
-    def on_exit(self, context: ContextManager):
+    def on_exit(self, context: ContextManager) -> NodeResult:
         """
         Run once when node is exit, right after `on_message` return NodeResult.status = Done. 
         Return:
@@ -45,15 +45,14 @@ class BaseNode():
         """
         pass
 
-    def run(self, context: ContextManager):
+    def run(self, context: ContextManager) -> NodeResult:
 
         status = context.get_status(self.name)
         if not status or status == NodeStatus.READY:
-            context.set_history(self.name)
             context.set_status(self.name, NodeStatus.BEGIN)
             enter_result = self.on_enter(context)  # pylint: disable=assignment-from-no-return
-
             if enter_result:
+                context.set_history('action', self.name, status=enter_result.status.value)
                 return enter_result
 
         message_result = self.on_message(context)
@@ -61,8 +60,9 @@ class BaseNode():
         if message_result.status == NodeStatus.DONE:
             exit_result = self.on_exit(context)  # pylint: disable=assignment-from-no-return
             context.set_status(self.name, NodeStatus.READY)
-
             if exit_result:
+                context.set_history('action', self.name, status=exit_result.status.value)
                 return exit_result
 
+        context.set_history('action', self.name, status=message_result.status.value)
         return message_result

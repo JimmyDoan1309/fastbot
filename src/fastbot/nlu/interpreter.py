@@ -4,7 +4,7 @@ from fastbot.models.cache import NluCache
 from .component import BaseComponent
 from .classifiers import Classifier
 from .registry import load_component
-from typing import List, Text, Union
+from typing import List, Text, Union, Dict, Any
 import os
 import shutil
 import json

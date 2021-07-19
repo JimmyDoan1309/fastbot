@@ -31,7 +31,7 @@ class InputsCollector(BaseNode):
         self.required_inputs = inputs
         self.entity_extractors = entity_extractors
 
-    def inputs_mapping(self, context: ContextManager):
+    def inputs_mapping(self, context: ContextManager) -> Dict[Text, InputConfig]:
         mapping = {}
         for _input in self.required_inputs:
             mapping[_input.name] = _input
@@ -40,10 +40,12 @@ class InputsCollector(BaseNode):
     def on_enter(self, context: ContextManager):
         node_state = context.get_data(self.name)
         node_state['step_count'] = {_input.name: 0 for _input in self.required_inputs}
-        context.set_data(self.name, node_state)
-        context.set_result(self.name, {})
+        params = context.get_params(self.name, {})
 
-    def on_message(self, context: ContextManager):
+        context.set_data(self.name, node_state)
+        context.set_result(self.name, params)
+
+    def on_message(self, context: ContextManager) -> NodeResult:
         if self.entity_extractors:
             self.entity_extractors.process(context.turn_context.message)
 
@@ -60,12 +62,12 @@ class InputsCollector(BaseNode):
 
             return NodeResult(NodeStatus.WAITING, self.name)
 
-    def on_exit(self, context: ContextManager):
+    def on_exit(self, context: ContextManager) -> None:
         node_state = context.get_data(self.name)
         node_state.pop('step_count')
         context.set_data(self.name, node_state)
 
-    def prompt(self, input_config: InputConfig, context: ContextManager):
+    def prompt(self, input_config: InputConfig, context: ContextManager) -> None:
         if not input_config.prompts:
             return
         if not input_config.reprompts:
@@ -80,12 +82,12 @@ class InputsCollector(BaseNode):
         response = random.choice(prompts)
         context.add_response(Response('text', response))
 
-    def _get_missing_input(self, collected_inputs: Dict[Text, Any]):
+    def _get_missing_input(self, collected_inputs: Dict[Text, Any]) -> Optional[InputConfig]:
         for _input in self.required_inputs:
             if _input.name not in collected_inputs and not _input.optional:
                 return _input
 
-    def _get_intent(self, iconfig: InputMapping, message: Message):
+    def _get_intent(self, iconfig: InputMapping, message: Message) -> Optional[Text]:
         req_intents = iconfig.values
         if not req_intents:
             return message.intent
@@ -98,7 +100,7 @@ class InputsCollector(BaseNode):
 
         return None
 
-    def _get_entities(self, iconfig: InputMapping, message: Message):
+    def _get_entities(self, iconfig: InputMapping, message: Message) -> Dict[Text, Any]:
         if not message.entities:
             return None
 
@@ -135,7 +137,7 @@ class InputsCollector(BaseNode):
 
         return extracted_entities
 
-    def _get_default(self, input_name: Text, imap: InputMapping, iconfig: InputConfig, context: ContextManager):
+    def _get_default(self, input_name: Text, imap: InputMapping, iconfig: InputConfig, context: ContextManager) -> Optional[Any]:
         if not iconfig.default:
             return None
 
@@ -165,19 +167,23 @@ class InputsCollector(BaseNode):
 
         return None
 
-    def _validate_and_assign(self, inputs: Dict[Text, Any], input_name: Text, imap: InputMapping, iconfig: InputConfig, value: Any, validator: Callable, context: ContextManager):
+    def _validate_and_assign(self,
+                             input_name: Text,
+                             imap: InputMapping,
+                             iconfig: InputConfig,
+                             value: Any,
+                             validator: Callable,
+                             context: ContextManager) -> Optional[Any]:
         if value:
             validated_value = validator(imap.itype, value, context)
             if validated_value:
-                # Prevent input override by different input mapping
-                if not inputs.get(input_name):
-                    inputs[input_name] = validated_value
+                return validated_value
         else:
             default_value = self._get_default(input_name, imap, iconfig, context)
             if default_value:
-                inputs[input_name] = default_value
+                return default_value
 
-    def _fill_inputs(self, context: ContextManager):
+    def _fill_inputs(self, context: ContextManager) -> Dict[Text, Any]:
         inputs = {}
         inputs_mapping = self.inputs_mapping(context)
         collected_inputs = context.get_result(self.name, {})
@@ -188,26 +194,37 @@ class InputsCollector(BaseNode):
             if node_state['step_count'][iconfig.name] == 0 and iconfig.always_ask:
                 continue
 
-            if input_name in collected_inputs.keys():
-                continue
-
             # validator take 3 arguments: itype, value, context
             validator = iconfig.validator if iconfig.validator != None else lambda t, v, c: v
+            from_itype = None
             for imap in iconfig.maps:
                 if node_state['step_count'][iconfig.name] == 0 and imap.always_ask:
                     continue
 
                 if imap.itype == ITYPE.TEXT:
                     text = context.turn_context.message.text
-                    self._validate_and_assign(inputs, input_name, imap, iconfig, text, validator, context)
+                    value = self._validate_and_assign(input_name, imap, iconfig, text, validator, context)
 
                 elif imap.itype == ITYPE.INTENT:
                     intent = self._get_intent(imap, context.turn_context.message)
-                    self._validate_and_assign(inputs, input_name, imap, iconfig, intent, validator, context)
+                    value = self._validate_and_assign(input_name, imap, iconfig, intent, validator, context)
 
                 elif imap.itype == ITYPE.ENTITY:
                     entities = self._get_entities(imap, context.turn_context.message)
-                    self._validate_and_assign(inputs, input_name, imap, iconfig, entities, validator, context)
+                    value = self._validate_and_assign(input_name, imap, iconfig, entities, validator, context)
+
+                if value:
+                    from_itype = imap.itype
+                    break
+
+            if input_name in collected_inputs.keys() and value and from_itype in iconfig.allow_override:
+                # TODO
+                # Do something when previously filled input slots get override in the current message
+                if collected_inputs.get(input_name) != value:
+                    print(f"Change input from {collected_inputs.get(input_name)} to {value}")
+
+            elif input_name not in collected_inputs.keys() and value:
+                inputs[input_name] = value
 
         if collected_inputs:
             if (inputs):

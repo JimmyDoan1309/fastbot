@@ -39,7 +39,7 @@ class TextResultCondition(BaseNode):
         super().__init__(name, **kwargs)
         self.conditions = conditions
 
-    def on_message(self, context: ContextManager):
+    def on_message(self, context: ContextManager) -> NodeResult:
         prev_node_result = str(context.result(True))
         next_node = self.conditions.get(prev_node_result)
         if not next_node:

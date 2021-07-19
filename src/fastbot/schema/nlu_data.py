@@ -11,6 +11,8 @@ class EntitySchema(BaseSchema):
     start = fields.Integer(required=True)
     end = fields.Integer(required=True)
     entity = fields.String(required=True)
+    role = fields.String(required=False)
+    from_entity = fields.String(required=False)
 
     @validates_schema
     def validate(self, data: dict, **kwargs):

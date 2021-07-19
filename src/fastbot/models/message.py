@@ -15,19 +15,21 @@ class Message:
         self.config = kwargs
         self.nlu_cache = NluCache(text)
 
-    def to_dict(self):
-        return {
+    def to_dict(self, include_ranking=False) -> Dict[Text, Any]:
+        result = {
             'text': self.text,
             'intent': self.intent,
-            'intents_ranking': self.intents_ranking,
-            'entities': self.entities,
+            'entities': [e.__dict__() for e in self.entities],
         }
+        if include_ranking:
+            result['intent_ranking'] = self.intents_ranking
+        return result
 
-    def __repr__(self):
-        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
+    def __repr__(self) -> Text:
+        return json.dumps(self.to_dict(True), ensure_ascii=False, indent=2)
 
     @classmethod
-    def from_dict(cls, message: Dict[Text, Any]):
+    def from_dict(cls, message: Dict[Text, Any]) -> 'Message':
         msg = cls(message.get('text'))
         msg.intent = message.get('intent')
         msg.intents_ranking = message.get('intents_ranking', [])

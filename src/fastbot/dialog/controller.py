@@ -1,4 +1,4 @@
-from .context import ContextManager
+from .context import ContextManager, TurnContext
 from .nodes.base import BaseNode
 from .nodes.status import NodeStatus
 from fastbot.nlu.interpreter import Interpreter
@@ -18,15 +18,15 @@ class DialogController:
         self.user_managers = {}
         self.fallback_node = None
 
-    def add_node(self, node: BaseNode):
+    def add_node(self, node: BaseNode) -> None:
         self.nodes[node.name] = node
 
-    def add_intent_trigger(self, intent: Text, node: Union[Text, BaseNode]):
+    def add_intent_trigger(self, intent: Text, node: Union[Text, BaseNode]) -> None:
         if isinstance(node, BaseNode):
             node = node.name
         self.intent_triggers[intent] = node
 
-    def set_fallback_node(self, node: Union[Text, BaseNode]):
+    def set_fallback_node(self, node: Union[Text, BaseNode]) -> None:
         """
         Default node run when callstack is empty and cannot find any triggered node
         """
@@ -34,20 +34,21 @@ class DialogController:
             node = node.name
         self.fallback_node = node
 
-    def get_user_context(self, user_id: Text):
+    def get_user_context(self, user_id: Text) -> ContextManager:
         if not self.user_managers.get(user_id):
             self.user_managers[user_id] = self._context_type.init(user_id)
 
         return self.user_managers[user_id]
 
-    def inject_dependency(self, user_id: Text, key: Text, value: Any):
+    def inject_dependency(self, user_id: Text, key: Text, value: Any) -> None:
         user_context = self.get_user_context(user_id)
         user_context.dependencies[key] = value
 
-    def handle_message(self, message: Message, user_id: Text = 'default'):
+    def handle_message(self, message: Message, user_id: Text = 'default') -> TurnContext:
         user_context = self.get_user_context(user_id)
         user_context.create_turn_context(message)
         user_context.load()
+        user_context.set_history('intent', message.intent, data=message.to_dict())
 
         # If callstack is empty
         if user_context.is_done():

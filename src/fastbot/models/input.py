@@ -42,6 +42,7 @@ class InputConfig:
         - default_delay_step: how many step to prompts before applied default value
         - always_ask: always explicitly ask for input instead infer from current message
         - optional: is field optional
+        - allow_override: list of InputMapping itype allow to get override during filing the form, default to ['entity'] only
         - validator: import path to function that will run when asked field is extracted successfully.
                      Usually use for extra validation step. 
                      Ex: Extract entity using RegexExtractor but need to verify the result with some external database
@@ -65,6 +66,7 @@ class InputConfig:
                  default_delay_step: Optional[int] = 0,
                  always_ask: Optional[bool] = False,
                  optional: Optional[bool] = False,
+                 allow_override: List[Text] = ['entity'],
                  validator: Optional[Union[Text, Callable]] = None):
         if isinstance(maps[0], Dict):
             from fastbot.schema.input import InputMappingSchema
@@ -78,10 +80,11 @@ class InputConfig:
         self.default_delay_step = default_delay_step
         self.always_ask = always_ask
         self.optional = optional
+        self.allow_override = allow_override
         self.validator = build_validator(validator) if validator != None else None
 
 
-def build_validator(validator):
+def build_validator(validator: Union[Text, Callable]):
     if isinstance(validator, Text):
         return import_from_path(validator)
     return validator

@@ -29,3 +29,4 @@ class InputConfigSchema(BaseSchema):
     always_ask = fields.Boolean(default=False)
     optional = fields.Boolean(default=False)
     validator = fields.String()
+    allow_override = fields.List(fields.String(), default=['entity'])

@@ -37,8 +37,8 @@ class MemoryContextManager(ContextManager):
         else:
             self.callstack.append(node_name)
 
-    def set_history(self, node_name: Text):
-        self.history.append(node_name)
+    def set_history(self, type: Text, name: Text, **kwargs):
+        self.history.append({'type': type, 'name': name, **kwargs})
 
     def get_params(self, node_name: Text, default: Any = None):
         return self.node_params.get(node_name, default)
@@ -59,13 +59,13 @@ class MemoryContextManager(ContextManager):
         return not bool(self.callstack)
 
     def result(self, delete: bool = True):
-        if len(self.history) < 2:
-            return None
-        prev_node = self.history[-2]
-        result = self.node_results.get(prev_node)
-        if delete:
-            self.node_results.pop(prev_node)
-        return result
+        for state in reversed(self.history):
+            if state['type'] == 'action':
+                result = self.node_results.get(state['name'])
+                if delete:
+                    self.node_results.pop(state['name'])
+                return result
+        return None
 
     def pop_callstack(self):
         return self.callstack.pop()

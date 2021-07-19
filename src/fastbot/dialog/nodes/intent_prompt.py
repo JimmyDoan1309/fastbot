@@ -12,7 +12,7 @@ class IntentPrompt(BaseNode):
         self.intents = intents
         self.prompts = prompts
 
-    def on_message(self, context: ContextManager):
+    def on_message(self, context: ContextManager) -> NodeResult:
         intent = context.turn_context.message.intent
         if intent in self.intents:
             context.set_result(self.name, intent)

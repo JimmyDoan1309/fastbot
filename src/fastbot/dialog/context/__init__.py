@@ -55,6 +55,9 @@ class ContextManager:
     def set_data(self, node_name: Text, value: Any):
         raise NotImplementedError()
 
+    def set_history(self, type: Text, name: Text):
+        raise NotImplementedError()
+
     def get_params(self, node_name: Text, default: Any = None):
         raise NotImplementedError()
 
