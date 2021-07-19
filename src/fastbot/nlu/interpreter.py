@@ -4,7 +4,7 @@ from fastbot.models.cache import NluCache
 from .component import BaseComponent
 from .classifiers import Classifier
 from .registry import load_component
-from typing import List, Text
+from typing import List, Text, Union
 import os
 import shutil
 import json
@@ -20,18 +20,18 @@ class Interpreter:
         self.override_intent = kwargs.get("override_intent", False)
         self.override_intent_pattern = kwargs.get('override_intent_pattern', r'(?<=<)(\w|\.|-)+(?=>)')
 
-    def verify_requirement(self, component: BaseComponent):
+    def verify_requirement(self, component: BaseComponent) -> bool:
         if not (set(component.requires).issubset(set(self.pipeline_names))):
             raise Exception(f'Component {component.component_type} requires {component.requires}!')
         return True
 
-    def add_component(self, component: BaseComponent):
+    def add_component(self, component: BaseComponent) -> None:
         if self.verify_requirement(component):
             self.pipeline.append(component)
             self.pipeline_names.append(component.component_type)
             component.pipeline_ref = self
 
-    def train(self, data: NluData, clear_cache=True):
+    def train(self, data: NluData, clear_cache=True) -> None:
         if (clear_cache):
             data.clear_cache()
         for component in self.pipeline:
@@ -39,7 +39,7 @@ class Interpreter:
             component.train(data)
             print(f'Done training {component.name}')
 
-    def evaluate_classifiers(self, test_data: NluData, clear_cache=True):
+    def evaluate_classifiers(self, test_data: NluData, clear_cache=True) -> Dict[Text, Any]:
         if clear_cache:
             test_data.clear_cache()
         for component in self.pipeline:
@@ -49,14 +49,17 @@ class Interpreter:
                 results = component.evaluate(test_data)
                 return results
 
-    def _override_intent(self, message: Message):
+    def _override_intent(self, message: Message) -> bool:
         match = re.search(self.override_intent_pattern, message.text)
         if match:
             message.intent = match.group()
             return True
         return False
 
-    def parse(self, message: Message):
+    def process(self, message: Union[Message, str]) -> Dict[Text, Any]:
+        if isinstance(message, str):
+            message = Message(message)
+
         # Skip process if incomming message has a pre-polulated intent
         # This allow to setup intent trigger function that cannot be
         # access with text (ex: UI button)
@@ -71,7 +74,7 @@ class Interpreter:
                 message.nlu_cache.classifiers_output = {}
             for component in self.pipeline:
                 component.process(message)
-        return message.to_dict()
+        return message
 
     def __iter__(self):
         for component in self.pipeline_names:

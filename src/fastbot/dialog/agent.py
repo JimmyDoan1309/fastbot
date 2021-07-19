@@ -1,7 +1,7 @@
 from fastbot.nlu.interpreter import Interpreter
-from fastbot.dialog.controller_builder import DialogControlBuilder
-from fastbot.dialog.context import ContextManager, TurnContext
-from fastbot.dialog.context.memory import MemoryContextManager
+from .controller_builder import DialogControlBuilder
+from .context import ContextManager, TurnContext
+from .context.memory import MemoryContextManager
 from fastbot.models.message import Message
 from typing import Optional, Union
 
@@ -16,19 +16,19 @@ class Agent:
         builder = DialogControlBuilder(context_manager)
         self.controller = builder.load(flow_config_path, **kwargs)
 
-    def local_test(self, user_id: str = 'default'):
+    def local_test(self, user_id: str = 'default') -> None:
         raw = input("User: ")
         while raw != '\q':
             message = Message(raw)
-            self.interpreter.parse(message)
+            self.interpreter.process(message)
             result = self.controller.handle_message(message, user_id)
             for resp in result.responses:
                 print(f"Bot: {resp.content}")
             raw = input("User: ")
 
-    def process(self, message: Union[Message, str], user_id: str = 'default'):
+    def process(self, message: Union[Message, str], user_id: str = 'default') -> TurnContext:
         if isinstance(message, str):
             message = Message(message)
-        self.interpreter.parse(message)
+        self.interpreter.process(message)
         turn_context = self.controller.handle_message(message, user_id)
         return turn_context

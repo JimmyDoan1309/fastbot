@@ -2,6 +2,7 @@ from .cache import NluCache
 from .entity import Entity
 from typing import Dict, Text, Any
 import uuid
+import json
 
 
 class Message:
@@ -21,6 +22,9 @@ class Message:
             'intents_ranking': self.intents_ranking,
             'entities': self.entities,
         }
+
+    def __repr__(self):
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
 
     @classmethod
     def from_dict(cls, message: Dict[Text, Any]):
