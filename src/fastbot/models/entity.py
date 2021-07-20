@@ -1,4 +1,5 @@
 from typing import List, Text, Dict, Any, Optional
+import json
 
 
 class Entity:
@@ -44,7 +45,7 @@ class Entity:
         return body
 
     def __repr__(self):
-        return self.__dict__()
+        return json.dumps(self.__dict__(), ensure_ascii=False, indent=2)
 
 
 class MeasurementEntityConfig:
@@ -61,10 +62,18 @@ class ListEntityItem:
 
 
 class ListEntityConfig:
-    def __init__(self, name: Text, values: List[ListEntityItem], case_sensitive: bool = True):
+    def __init__(self, name: Text,
+                 values: List[ListEntityItem],
+                 case_sensitive: bool = True,
+                 fuzzy_match: bool = False,
+                 fuzzy_match_threshold: float = 70.0,
+                 fuzzy_match_min_search_length: int = 5):
         self.name = name
         self.values = values
         self.case_sensitive = case_sensitive
+        self.fuzzy_match = fuzzy_match
+        self.fuzzy_match_threshold = fuzzy_match_threshold
+        self.fuzzy_match_min_search_length = fuzzy_match_min_search_length
 
 
 class RegexEntityConfig:

@@ -15,7 +15,7 @@ class Message:
         self.config = kwargs
         self.nlu_cache = NluCache(text)
 
-    def to_dict(self, include_ranking=False) -> Dict[Text, Any]:
+    def __dict__(self, include_ranking=False) -> Dict[Text, Any]:
         result = {
             'text': self.text,
             'intent': self.intent,
@@ -26,7 +26,7 @@ class Message:
         return result
 
     def __repr__(self) -> Text:
-        return json.dumps(self.to_dict(True), ensure_ascii=False, indent=2)
+        return json.dumps(self.__dict__(True), ensure_ascii=False, indent=2)
 
     @classmethod
     def from_dict(cls, message: Dict[Text, Any]) -> 'Message':

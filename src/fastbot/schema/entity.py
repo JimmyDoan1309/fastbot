@@ -34,6 +34,9 @@ class ListEntityConfigSchema(BaseSchema):
     name = fields.String(required=True)
     values = fields.List(fields.Nested(ListEntityItemSchema), default=[])
     case_sensitive = fields.Bool(default=True)
+    fuzzy_match = fields.Bool(default=False)
+    fuzzy_match_threshold = fields.Float(default=70.0)
+    fuzzy_match_min_search_length = fields.Integer(default=5)
 
 
 class RegexEntityConfigSchema(BaseSchema):

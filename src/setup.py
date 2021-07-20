@@ -22,8 +22,10 @@ setuptools.setup(
         'pymongo>=3',
         'pyvi>=0.1.1',
         'spacy>=3,<3.2',
+        'rapidfuzz>=1.4',
         'python-dateutil',
         'fire',
+        'regex',
     ],
     entry_points={
         'console_scripts': [

@@ -64,7 +64,7 @@ class Interpreter:
         # This allow to setup intent trigger function that cannot be
         # access with text (ex: UI button)
         if message.intent:
-            return message.to_dict()
+            return message
 
         is_override = False
         if self.override_intent:

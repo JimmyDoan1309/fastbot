@@ -48,7 +48,7 @@ class DialogController:
         user_context = self.get_user_context(user_id)
         user_context.create_turn_context(message)
         user_context.load()
-        user_context.set_history('intent', message.intent, data=message.to_dict())
+        user_context.set_history('intent', message.intent, data=message.__dict__())
 
         # If callstack is empty
         if user_context.is_done():
