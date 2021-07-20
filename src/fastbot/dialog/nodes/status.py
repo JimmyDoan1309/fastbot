@@ -2,7 +2,7 @@ from typing import Text, List, Union
 from enum import Enum
 
 
-class NodeStatus(Enum):
+class NodeStatus(str, Enum):
     READY = 'ready'
     BEGIN = 'begin'
     WAITING = 'waiting'

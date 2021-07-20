@@ -52,7 +52,7 @@ class BaseNode():
             context.set_status(self.name, NodeStatus.BEGIN)
             enter_result = self.on_enter(context)  # pylint: disable=assignment-from-no-return
             if enter_result:
-                context.set_history('action', self.name, status=enter_result.status.value)
+                context.set_history('action', self.name, status=enter_result.status)
                 return enter_result
 
         message_result = self.on_message(context)
@@ -61,8 +61,8 @@ class BaseNode():
             exit_result = self.on_exit(context)  # pylint: disable=assignment-from-no-return
             context.set_status(self.name, NodeStatus.READY)
             if exit_result:
-                context.set_history('action', self.name, status=exit_result.status.value)
+                context.set_history('action', self.name, status=exit_result.status)
                 return exit_result
 
-        context.set_history('action', self.name, status=message_result.status.value)
+        context.set_history('action', self.name, status=message_result.status)
         return message_result

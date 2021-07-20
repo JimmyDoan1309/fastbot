@@ -70,13 +70,15 @@ class MemoryContextManager(ContextManager):
     def pop_callstack(self):
         return self.callstack.pop()
 
-    def restart(self):
+    def restart(self, user_data=False):
         self.callstack = []
         self.history = []
         self.node_results = {}
         self.node_params = {}
         self.node_status = {}
         self.node_data = {}
+        if user_data:
+            self.user_data = {}
 
     def load(self):
         pass
@@ -92,4 +94,5 @@ class MemoryContextManager(ContextManager):
             'node_results': self.node_results,
             'node_data': self.node_data,
             'node_status': self.node_status,
+            'timestamp': self.timestamp,
         }

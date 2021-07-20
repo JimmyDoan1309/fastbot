@@ -17,6 +17,9 @@ class ITYPE():
     ENTITY = 'entity'
 
 
+OVERRIDE_INPUT_FUNCTION = 'when_input_overrided'
+
+
 class InputsCollector(BaseNode):
     def __init__(self,
                  name: Text,
@@ -189,7 +192,7 @@ class InputsCollector(BaseNode):
         collected_inputs = context.get_result(self.name, {})
 
         node_state = context.get_data(self.name)
-
+        override_input_function = getattr(self, OVERRIDE_INPUT_FUNCTION, self._default_override_input)
         for input_name, iconfig in inputs_mapping.items():
             if node_state['step_count'][iconfig.name] == 0 and iconfig.always_ask:
                 continue
@@ -221,7 +224,8 @@ class InputsCollector(BaseNode):
                 # TODO
                 # Do something when previously filled input slots get override in the current message
                 if collected_inputs.get(input_name) != value:
-                    print(f"Change input from {collected_inputs.get(input_name)} to {value}")
+                    old_value = collected_inputs.get(input_name)
+                    override_input_function(input_name, old_value, value, context)
 
             elif input_name not in collected_inputs.keys() and value:
                 inputs[input_name] = value
@@ -235,3 +239,7 @@ class InputsCollector(BaseNode):
             if (inputs):
                 context.set_result(self.name, inputs)
             return inputs
+
+    def _default_override_input(self, input_name: Text, old_value: Any, new_value: Any, context: ContextManager):
+        print(f'Change {input_name} from {old_value} to {new_value}.')
+        return new_value

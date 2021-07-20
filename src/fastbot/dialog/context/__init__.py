@@ -1,6 +1,8 @@
 from typing import Text, List, Dict, Any, Callable
 from fastbot.models import Message, Response
+from fastbot.constants import DEFAULT_SESSION_TIMEOUT
 import logging
+from time import time
 
 
 log = logging.getLogger(__name__)
@@ -22,7 +24,8 @@ class ContextManager:
     _id = None
 
     def __init__(self):
-        self.dependencies = {}
+        self.user_data = {}
+        self.timestamp = time()
         self.turn_context = TurnContext()
 
     def init(self, _id: Text = None):
@@ -90,3 +93,12 @@ class ContextManager:
 
     def restart(self):
         raise NotImplementedError()
+
+    def check_session_timeout(self, timeout_in: float = DEFAULT_SESSION_TIMEOUT) -> None:
+        current = time()/3600
+        last_message = self.timestamp/3600
+        if (current - last_message) > timeout_in:
+            self.restart()
+
+    def update_session_timestamp(self) -> None:
+        self.timestamp = time()
