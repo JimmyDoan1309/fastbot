@@ -1,5 +1,5 @@
 from typing import Text, List, Dict, Any, Callable
-from fastbot.models import Message, Response
+from fastbot.models import Message, Response, Step
 from fastbot.constants import DEFAULT_SESSION_TIMEOUT
 import logging
 from time import time
@@ -58,40 +58,40 @@ class ContextManager:
     def set_data(self, node_name: Text, value: Any):
         raise NotImplementedError()
 
-    def set_history(self, type: Text, name: Text):
+    def set_history(self, step: Step):
         raise NotImplementedError()
 
-    def get_params(self, node_name: Text, default: Any = None):
+    def get_params(self, node_name: Text, default: Any = None) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def get_result(self, node_name: Text, default: Any = None):
+    def get_result(self, node_name: Text, default: Any = None) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def get_status(self, node_name: Text, default: Any = None):
+    def get_status(self, node_name: Text, default: Any = None) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def get_data(self, node_name: Text, default: Any = {}):
+    def get_data(self, node_name: Text, default: Any = {}) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def get_history(self):
+    def get_history(self) -> List[Step]:
         raise NotImplementedError()
 
-    def is_done(self):
+    def is_done(self) -> bool:
         raise NotImplementedError()
 
-    def pop_callstack(self):
+    def pop_callstack(self) -> Text:
         raise NotImplementedError()
 
     def result(self, delete: bool = True):
         raise NotImplementedError()
 
-    def load(self):
+    def load(self) -> None:
         raise NotImplementedError()
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError()
 
-    def restart(self):
+    def restart(self) -> None:
         raise NotImplementedError()
 
     def check_session_timeout(self, timeout_in: float = DEFAULT_SESSION_TIMEOUT) -> None:

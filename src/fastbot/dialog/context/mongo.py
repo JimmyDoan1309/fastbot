@@ -1,9 +1,11 @@
 from . import TurnContext
 from .memory import MemoryContextManager
 from fastbot.models import Message
+from fastbot.schema.policy_data import StepSchema
 from typing import Text, Dict, Any, Union, List
 from pymongo.collection import Collection
 from time import time
+import json
 import pymongo
 
 
@@ -41,15 +43,16 @@ class MongoContextMananger(MemoryContextManager):
     def load(self):
         context_data = self.contexts_col.find_one({'_id': self._id}).get('data', {})
         self.callstack = context_data.get('callstack', [])
-        self.history = context_data.get('history', [])
         self.node_params = context_data.get('node_params', {})
         self.node_results = context_data.get('node_results', {})
         self.node_data = context_data.get('node_data', {})
         self.node_status = context_data.get('node_status', {})
         self.timestamp = context_data.get('time_stamp', time())
-
         user_data = self.users_col.find_one({'_id': self._id}).get('data', {})
         self.user_data = user_data.get('user_data', {})
+
+        history = context_data.get('history', [])
+        self.history = StepSchema(many=True).load(history)
 
     def save(self):
         dump = self.json()

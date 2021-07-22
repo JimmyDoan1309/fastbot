@@ -1,5 +1,5 @@
 from typing import Text, List, Dict, Any, Union, Callable
-from fastbot.models import Message, Response
+from fastbot.models import Message, Response, Step
 from . import ContextManager, TurnContext
 
 
@@ -37,8 +37,8 @@ class MemoryContextManager(ContextManager):
         else:
             self.callstack.append(node_name)
 
-    def set_history(self, type: Text, name: Text, **kwargs):
-        self.history.append({'type': type, 'name': name, **kwargs})
+    def set_history(self, step: Step):
+        self.history.append(step)
 
     def get_params(self, node_name: Text, default: Any = None):
         return self.node_params.get(node_name, default)
@@ -89,7 +89,7 @@ class MemoryContextManager(ContextManager):
     def json(self):
         return {
             'callstack': self.callstack,
-            'history': self.history,
+            'history': [step.__dict__() for step in self.history],
             'node_params': self.node_params,
             'node_results': self.node_results,
             'node_data': self.node_data,

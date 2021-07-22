@@ -1,10 +1,10 @@
 import json
 from typing import Text, Dict, Any, Union
-from fastbot.schema.nlu_data import NluDataSchema
+from fastbot.schema.policy_data import PolicyDataSchema
 import yaml
 
 
-def load_nlu_data(data: Union[Text, Dict[Text, Any]]):
+def load_policy_data(data: Union[Text, Dict[Text, Any]]):
     if isinstance(data, str):
         path = data
         with open(path, 'r') as fp:
@@ -14,4 +14,4 @@ def load_nlu_data(data: Union[Text, Dict[Text, Any]]):
                 data = yaml.load(fp, Loader=yaml.FullLoader)
             else:
                 raise Exception("Flow config must be .json or .yaml file")
-    return NluDataSchema().load(data)
+    return PolicyDataSchema().load(data)
