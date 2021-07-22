@@ -29,7 +29,6 @@ class Interpreter:
         if self.verify_requirement(component):
             self.pipeline.append(component)
             self.pipeline_names.append(component.component_type)
-            component.pipeline_ref = self
 
     def train(self, data: NluData, clear_cache=True) -> None:
         if (clear_cache):

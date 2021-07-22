@@ -12,7 +12,6 @@ class BaseComponent:
     def __init__(self, **kwargs):
         self.name = kwargs.get('name', self.name)
         self.config = kwargs
-        self.pipeline_ref = kwargs.get('pipeline_ref', None)
 
     def train(self, data: NluData):
         raise NotImplementedError('Subclass must implement this')

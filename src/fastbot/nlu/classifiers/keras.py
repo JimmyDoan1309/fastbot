@@ -1,4 +1,4 @@
-from .. import Classifier
+from . import Classifier
 from fastbot.schema.nlu_data import NluData
 from fastbot.models.message import Message
 from typing import Text, List, Dict, Any, Union
@@ -9,8 +9,8 @@ TRAINING = 'training'
 INFERENCING = 'inferencing'
 
 
-class ConvolutionClassifier(Classifier):
-    name = 'ConvolutionClassifier'
+class KerasClassifier(Classifier):
+    name = 'KerasClassifier'
 
     def __init__(self, max_sequence_len: int = 30, batch_size: int = 64, epochs: int = 150, **kwargs):
         super().__init__(**kwargs)
@@ -53,15 +53,12 @@ class ConvolutionClassifier(Classifier):
 
         return X, y
 
-    def train(self, data: NluData):
+    def build_model(self, data: NluData, X: np.ndarray, y: np.ndarray, **kwargs):
         try:
             from tensorflow import keras
         except:
             raise ModuleNotFoundError('Tensorflow is soft-required module for training only. Please install it seperately.')
 
-        self._model_mode = TRAINING
-
-        X, y = self._prepared_data(data, True)
         self.model = keras.models.Sequential([
             keras.layers.InputLayer(input_shape=X.shape[1:]),
             keras.layers.Conv1D(filters=64, kernel_size=5,
@@ -83,9 +80,15 @@ class ConvolutionClassifier(Classifier):
             keras.layers.Dense(256),
             keras.layers.Dense(units=self.number_of_intent, activation='softmax')
         ])
-        optimizer = keras.optimizers.Adam(learning_rate=0.001)
-        self.model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['acc'])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+        return model
 
+    def train(self, data: NluData):
+        self._model_mode = TRAINING
+        X, y = self._prepared_data(data, True)
+        self.model = self.build_model(data, X, y)
+
+        from tensorflow import keras
         early_stop = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.001, patience=10, mode='min', restore_best_weights=True)
         hist = self.model.fit(X, y,
                               batch_size=self.batch_size,
@@ -134,7 +137,7 @@ class ConvolutionClassifier(Classifier):
 
         return results
 
-    def _tflite_predict(self, inp: np.ndarray):
+    def tflite_predict(self, inp: np.ndarray):
         inp = np.float32(inp)
         input_detail = self.model.get_input_details()[0]
         output_detail = self.model.get_output_details()[0]
@@ -155,7 +158,7 @@ class ConvolutionClassifier(Classifier):
         if self._model_mode == TRAINING:
             probs = self.model.predict(vec)[0]  # pylint: disable=no-member
         elif self._model_mode == INFERENCING:
-            probs = self._tflite_predict(vec)[0]
+            probs = self.tflite_predict(vec)[0]
         else:
             raise Exception(f'model_mode must be `training` or `inferencing`')
 
@@ -190,7 +193,7 @@ class ConvolutionClassifier(Classifier):
         return metadata
 
     def save(self, path: Text):
-        if (self._model_mode != 'training'):
+        if (self._model_mode != TRAINING):
             return
 
         try:
@@ -212,9 +215,9 @@ class ConvolutionClassifier(Classifier):
             import tflite_runtime.interpreter as tflite
         except:
             raise ModuleNotFoundError("""
-                    tflite_runtime module is soft-required for load keras model for inference. Please install it seperately.
-                    Visit `https://www.tensorflow.org/lite/guide/python` for guide on how to install appropriate
-                        tflite_runtime package for your OS and python's version. 
+            tflite_runtime module is soft-required for load keras model for inference. Please install it seperately.
+            Visit `https://www.tensorflow.org/lite/guide/python` for guide on how to install appropriate
+                tflite_runtime package for your OS and python's version. 
                     """)
 
         classifier = cls()

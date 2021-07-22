@@ -1,1 +1,0 @@
-from .convolution import ConvolutionClassifier

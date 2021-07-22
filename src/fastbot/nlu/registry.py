@@ -1,5 +1,5 @@
-from .classifiers.sklearn_models import ForestClassifier, NeuralNetClassifier, KnnClassifier
-from .classifiers.keras_models import ConvolutionClassifier
+from .classifiers.sklearn import ForestClassifier, NeuralNetClassifier, KnnClassifier
+from .classifiers.keras import KerasClassifier
 from .classifiers.ensemble import EnsembleClassifier
 from .tokenizers.word_tokenizer import WordTokenizer
 from .tokenizers.vietnamese_tokenizer import VietnameseTokenizer
@@ -22,7 +22,7 @@ registered_component = [
     ForestClassifier,
     NeuralNetClassifier,
     KnnClassifier,
-    ConvolutionClassifier,
+    KerasClassifier,
     EnsembleClassifier,
     # Tokenizers
     WordTokenizer,
