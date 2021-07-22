@@ -46,10 +46,6 @@ class DialogController:
 
         return self.user_managers[user_id]
 
-    def inject_dependency(self, user_id: Text, key: Text, value: Any) -> None:
-        user_context = self.get_user_context(user_id)
-        user_context.dependencies[key] = value
-
     def inject_user_data(self, user_id: Text, key: Text, value: Any) -> None:
         user_context = self.get_user_context(user_id)
         user_context.user_data[key] = value
@@ -69,9 +65,9 @@ class DialogController:
 
         return None
 
-    def handle_message(self, message: Message, user_id: Text = 'default') -> TurnContext:
+    def handle_message(self, message: Message, user_id: Text = 'default', turn_data: Dict[Text, Any] = {}) -> TurnContext:
         user_context = self.get_user_context(user_id)
-        user_context.create_turn_context(message)
+        user_context.create_turn_context(message, turn_data)
         user_context.load()
         user_context.check_session_timeout(self.session_timeout_duration)
         user_context.update_session_timestamp()

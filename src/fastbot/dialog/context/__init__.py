@@ -9,8 +9,9 @@ log = logging.getLogger(__name__)
 
 
 class TurnContext:
-    def __init__(self, message: Message = None, **kwargs):
+    def __init__(self, message: Message = None, turn_data: Dict[Text, Any] = {}):
         self.message = message
+        self.turn_data = turn_data
         self.responses = []
         self.response_idx = 0
 
@@ -43,8 +44,8 @@ class ContextManager:
             log.error(e)
             self.turn_context.add_response(response)
 
-    def create_turn_context(self, message: Message):
-        raise NotImplementedError()
+    def create_turn_context(self, message: Message, turn_data: Dict[Text, Any] = {}):
+        self.turn_context = TurnContext(message, turn_data)
 
     def set_params(self, node_name: Text, value: Any):
         raise NotImplementedError()

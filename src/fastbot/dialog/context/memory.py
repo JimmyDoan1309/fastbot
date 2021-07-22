@@ -16,9 +16,6 @@ class MemoryContextManager(ContextManager):
     def init(self, _id: Text = None):
         return self.__class__()
 
-    def create_turn_context(self, message: Message):
-        self.turn_context = TurnContext(message)
-
     def set_params(self, node_name: Text, value: Any):
         self.node_params[node_name] = value
 

@@ -3,7 +3,7 @@ from .controller_builder import DialogControlBuilder
 from .context import ContextManager, TurnContext
 from .context.memory import MemoryContextManager
 from fastbot.models.message import Message
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Text, Any
 
 
 class Agent:
@@ -26,9 +26,9 @@ class Agent:
                 print(f"Bot: {resp.content}")
             raw = input("User: ")
 
-    def process(self, message: Union[Message, str], user_id: str = 'default') -> TurnContext:
+    def process(self, message: Union[Message, str], user_id: str = 'default', turn_data: Dict[Text, Any] = {}) -> TurnContext:
         if isinstance(message, str):
             message = Message(message)
         self.interpreter.process(message)
-        turn_context = self.controller.handle_message(message, user_id)
+        turn_context = self.controller.handle_message(message, user_id, turn_data)
         return turn_context
