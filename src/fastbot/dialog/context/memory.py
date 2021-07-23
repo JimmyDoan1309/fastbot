@@ -57,10 +57,10 @@ class MemoryContextManager(ContextManager):
 
     def result(self, delete: bool = True):
         for state in reversed(self.history):
-            if state['type'] == 'action':
-                result = self.node_results.get(state['name'])
+            if state.action is not None:
+                result = self.node_results.get(state.action)
                 if delete:
-                    self.node_results.pop(state['name'])
+                    self.node_results.pop(state.action)
                 return result
         return None
 
