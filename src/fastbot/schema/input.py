@@ -1,7 +1,13 @@
 from . import BaseSchema
 from marshmallow import Schema, fields, validates, ValidationError
-from fastbot.models.input import InputMapping, InputConfig
+from fastbot.models.input import InputMapping, InputConfig, EscapeIntentAction
 from typing import Text, List
+
+
+class EscapeIntentActionSchema(BaseSchema):
+    __cls_model__ = EscapeIntentAction
+    intent = fields.String(required=True)
+    next_node = fields.String(required=True)
 
 
 class InputMappingSchema(BaseSchema):

@@ -4,7 +4,7 @@ from fastbot.dialog.context import ContextManager
 from fastbot.models.input import InputConfig, InputMapping
 from fastbot.models.message import Message
 from fastbot.models.response import Response
-from fastbot.schema.input import InputConfigSchema
+from fastbot.schema.input import InputConfigSchema, EscapeIntentActionSchema
 from fastbot.entity_extractors import ExtractorPipeline
 from fastbot.entity_extractors.constants import DUCKLING_TIME_ENTITIES
 from typing import Text, List, Dict, Any, Union, Optional, Callable
@@ -25,14 +25,18 @@ class InputsCollector(BaseNode):
                  name: Text,
                  inputs: Union[List[Dict], List[InputConfig]],
                  entity_extractors: Optional[ExtractorPipeline] = None,
+                 escape_intent_action: Union[List[Dict], List[InputConfig]] = [],
                  **kwargs):
 
         if isinstance(inputs[0], Dict):
             inputs = InputConfigSchema(many=True).load(inputs)
 
+        if escape_intent_action and isinstance(escape_intent_action[0], Dict):
+            escape_intent_action = EscapeIntentActionSchema(many=True).load(escape_intent_action)
         super().__init__(name, **kwargs)
         self.required_inputs = inputs
         self.entity_extractors = entity_extractors
+        self.escape_intent_action = escape_intent_action
 
     def inputs_mapping(self, context: ContextManager) -> Dict[Text, InputConfig]:
         mapping = {}
@@ -49,6 +53,12 @@ class InputsCollector(BaseNode):
         context.set_result(self.name, params)
 
     def on_message(self, context: ContextManager) -> NodeResult:
+        message_intent = context.turn_context.message.intent
+        for escape_intent in self.escape_intent_action:
+            if escape_intent.intent == message_intent:
+                context.turn_context.message.intent = None  # Reset intent to avoid infinite loop
+                return NodeResult(NodeStatus.ESCAPE, [self.name, escape_intent.next_node])
+
         if self.entity_extractors:
             self.entity_extractors.process(context.turn_context.message)
 

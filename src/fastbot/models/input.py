@@ -2,6 +2,12 @@ from typing import List, Text, Dict, Any, Optional, Union, Callable
 from fastbot.utils.common import import_from_path
 
 
+class EscapeIntentAction:
+    def __init__(self, intent: Text, next_node: Text):
+        self.intent = intent
+        self.next_node = next_node
+
+
 class InputMapping:
     """
     Attributes:

@@ -9,6 +9,7 @@ class NodeStatus(str, Enum):
     DONE = 'done'
     ERROR = 'error'
     RESTART = 'restart'
+    ESCAPE = 'escape'
 
 
 class NodeResult:
