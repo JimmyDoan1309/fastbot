@@ -3,13 +3,13 @@ import setuptools
 
 setuptools.setup(
     name="fastbot",
-    version="0.2.0",
+    version="1.0.0",
     author="TrungDoan",
     author_email="trungdoan1309@gmail.com",
     description="botengine module",
     packages=setuptools.find_packages(),
     classifiers=[],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     install_requires=[
         'numpy>=1.21',
         'scikit-learn>=0.23',
