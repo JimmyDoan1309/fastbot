@@ -1,6 +1,4 @@
 pipeline:
-  - type: components.SampleCounter
-    name: sample_counter
   - type: CasingProcessor
     name: casing_processor
   - type: PunctuationRemover
