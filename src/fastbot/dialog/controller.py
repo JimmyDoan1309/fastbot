@@ -84,7 +84,7 @@ class DialogController:
         step = 1
         while not user_context.is_done():
             if step > SHORT_CIRCUIT:
-                user_context.add_response(Response('text', f'Exceed {SHORT_CIRCUIT} steps without listening. Short Circuit!!!'))
+                user_context.add_response(Response(f'Exceed {SHORT_CIRCUIT} steps without listening. Short Circuit!!!'))
                 user_context.restart()
                 break
 

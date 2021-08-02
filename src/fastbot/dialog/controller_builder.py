@@ -52,14 +52,22 @@ class DialogControlBuilder:
 
         for node_config in nodes:
             if node_config['type'] == InputsCollector.__name__:
+
                 node_entities = node_config['config'].get('entities', [])
-                escape_intent_action = node_config.get('escape_intent_action', [])
                 entity_extractors = ExtractorPipelineBuilder(node_entities, entities, **config).build()
+
+                escape_intent_action = node_config['config'].get('escape_intent_action', [])
+                validator = node_config['config'].get('validator')
+
+                if validator:
+                    validator = import_from_path(validator)
+
                 node = InputsCollector(
                     node_config['name'],
                     node_config['config']['inputs'],
                     entity_extractors,
                     escape_intent_action,
+                    validator,
                     next_node=node_config.get('next_node'))
             else:
                 node_class = node_mapping.get(node_config['type'])

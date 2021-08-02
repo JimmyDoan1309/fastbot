@@ -1,7 +1,7 @@
 from .base import BaseNode
 from .status import NodeStatus, NodeResult
 from fastbot.dialog.context import ContextManager
-from fastbot.models.input import InputConfig, InputMapping
+from fastbot.models.input import InputConfig, InputMapping, EscapeIntentAction
 from fastbot.models.message import Message
 from fastbot.models.response import Response
 from fastbot.schema.input import InputConfigSchema, EscapeIntentActionSchema
@@ -25,7 +25,8 @@ class InputsCollector(BaseNode):
                  name: Text,
                  inputs: Union[List[Dict], List[InputConfig]],
                  entity_extractors: Optional[ExtractorPipeline] = None,
-                 escape_intent_action: Union[List[Dict], List[InputConfig]] = [],
+                 escape_intent_action: Union[List[Dict], List[EscapeIntentAction]] = [],
+                 validator: Optional[Callable] = None,
                  **kwargs):
 
         if isinstance(inputs[0], Dict):
@@ -33,6 +34,7 @@ class InputsCollector(BaseNode):
 
         if escape_intent_action and isinstance(escape_intent_action[0], Dict):
             escape_intent_action = EscapeIntentActionSchema(many=True).load(escape_intent_action)
+
         super().__init__(name, **kwargs)
         self.required_inputs = inputs
         self.entity_extractors = entity_extractors
@@ -63,7 +65,7 @@ class InputsCollector(BaseNode):
             self.entity_extractors.process(context.turn_context.message)
 
         collected_inputs = self._fill_inputs(context)
-        missing_input = self._get_missing_input(collected_inputs)
+        missing_input = self._get_missing_input(collected_inputs, context)
         if not missing_input:
             return NodeResult(NodeStatus.DONE, self.next_node)
         else:
@@ -93,12 +95,23 @@ class InputsCollector(BaseNode):
                 prompts = input_config.prompts
 
         response = random.choice(prompts)
-        context.add_response(Response('text', response))
+        context.add_response(Response(response))
 
-    def _get_missing_input(self, collected_inputs: Dict[Text, Any]) -> Optional[InputConfig]:
+    def _get_missing_input(self, collected_inputs: Dict[Text, Any], context: ContextManager) -> Optional[InputConfig]:
         for _input in self.required_inputs:
             if _input.name not in collected_inputs and not _input.optional:
                 return _input
+
+        # Valida all inputs
+        validate_function = getattr(self, 'validator', lambda v, c: None)
+        missing_inputs = validate_function(collected_inputs, context)
+        if missing_inputs:
+            for iname in missing_inputs:
+                collected_inputs.pop(iname)
+            context.set_result(self.name, collected_inputs)
+            for _input in self.required_inputs:
+                if _input.name not in collected_inputs and not _input.optional:
+                    return _input
 
     def _get_intent(self, iconfig: InputMapping, message: Message) -> Optional[Text]:
         req_intents = iconfig.values
@@ -251,5 +264,4 @@ class InputsCollector(BaseNode):
             return inputs
 
     def _default_override_input(self, input_name: Text, old_value: Any, new_value: Any, context: ContextManager):
-        print(f'Change {input_name} from {old_value} to {new_value}.')
         return new_value

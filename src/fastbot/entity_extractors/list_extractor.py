@@ -60,7 +60,7 @@ class ListExtractor(Extractor):
                     confidence = 1.0
                     if self.fuzzy_match:
                         confidence = fuzz.partial_ratio(match.group(), term, score_cutoff=self.fuzzy_match_threshold)
-                        if not confidence > 0:
+                        if confidence == 0:
                             continue
 
                     # if a term is a substring of one of the previous terms, ignore

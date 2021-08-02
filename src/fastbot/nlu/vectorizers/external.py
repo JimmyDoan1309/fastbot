@@ -10,14 +10,13 @@ import numpy as np
 class ExternalVectorizer(Vectorizer):
     """
     This Vectorizer call an external endpoint to retrieve the word vectors.
-    which allow for decoupling between intepreter and any big pretrained word2vec framework 
+    which allow for decoupling between the interpreter and any big pretrained word2vec framework 
         Ex: Fastext, Bert, Elmo, GPT, etc...
 
     Which mean:
         - Multiple bot can use the same SOTA word2vec without hoarding all the resources
         - Bot can be deployed to lower-end system that cannot handle something like BERT
             without sacrificing awesome benefit of SOTA word2vec
-            Given other components is also not very resource-intensive
 
     Request format: List of json object with fields
         [{

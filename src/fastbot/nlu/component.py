@@ -21,10 +21,12 @@ class BaseComponent:
 
     def evaluate(self, test_data: NluData):
         """
-        Evaluate test data. For components that doesn't have internal states
-        change (ex: classifier model, vectorizer) during the training phase.
-        Evaluating is the same as training. Overide this method for
-        component that has internal states changes
+        Evaluate test data. For components that have internal states change
+        (ex: classifier model, vectorizer) during the training phase.
+        You need to override this method to appropriately processes testing data.
+
+        For other components that do not have internal state change (ex: preprocessor, tokenizer)
+        Evaluating is the same as training.
         """
         self.train(test_data)
 

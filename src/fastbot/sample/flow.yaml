@@ -1,0 +1,182 @@
+nodes:
+  - name: smalltalk.greet
+    type: TextResponse
+    config:
+      responses:
+        - Hello
+        - Hi
+        - Hola
+    intent_trigger: smalltalk.greet
+
+  - name: smalltalk.bye
+    type: TextResponse
+    config:
+      responses:
+        - Bye
+        - See ya
+        - Good bye
+    intent_trigger: smalltalk.bye
+
+  - name: smalltalk.name
+    type: TextResponse
+    config:
+      responses:
+        - I don not have a Name
+        - You can just call me Bot
+    intent_trigger: smalltalk.name
+
+  - name: smalltalk.help
+    type: TextResponse
+    config:
+      responses:
+        - I can tell you some jokes, check the weather and help you fill volunteer form
+    intent_trigger: smalltalk.help
+
+  - name: smalltalk.thank
+    type: TextResponse
+    config:
+      responses:
+        - You are welcomed :)
+        - Glad I could help!
+    intent_trigger: smalltalk.thank
+
+  - name: action.tell_fact
+    type: nodes.GetFactResponse
+    intent_trigger: action.tell_fact
+
+  - name: action.tell_joke
+    type: nodes.GetJokeResponse
+    intent_trigger: action.tell_joke
+
+  - name: action.find_car.form
+    type: InputsCollector
+    intent_trigger: action.find_car
+    next_node: action.find_car.confirmation
+    config:
+      inputs:
+        - name: car_brand
+          maps:
+            - itype: entity
+              values: car_brand
+              multiple: false
+          optional: True
+        - name: car_model
+          maps:
+            - itype: entity
+              values: car_model
+              multiple: false
+          prompts:
+            - What car are you looking for?
+            - Sure, what model you are looking for?
+        - name: car_color
+          maps:
+            - itype: entity
+              values: color
+              multiple: False
+          optional: True
+        - name: car_year
+          maps:
+            - itype: entity
+              values: year
+              multiple: False
+          optional: True
+          default: '2021'
+          validator: validators.car_form.car_year_validate
+
+      entities:
+        - type: list
+          config:
+            name: car_brand
+            case_sensitive: false
+            values:
+              - name: Toyota
+              - name: Mercedes
+                synonyms:
+                  - Merc
+              - name: Honda
+        - type: list
+          config:
+            name: car_model
+            case_sensitive: false
+            values:
+              - name: Camry
+              - name: Corolla
+              - name: Sequoia
+              - name: Prius
+              - name: Arccord
+              - name: Pilot
+              - name: Civic
+              - name: Insight
+              - name: S Series
+                synonyms:
+                  - S500
+                  - S400
+              - name: GLC
+                synonyms:
+                  - GLC 300
+                  - GLC 250
+        - type: color
+        - type: year
+
+  - name: action.find_car.confirmation
+    type: nodes.car.CarSearchConfirmation
+    config:
+      affirm: action.find_car.affirm
+      deny: action.find_car.deny
+
+  - name: action.find_car.affirm
+    type: nodes.car.CarSearchAffirm
+
+  - name: action.find_car.deny
+    type: nodes.car.CarSearchDeny
+
+entities:
+  year:
+    type: regex
+    config:
+      name: year
+      patterns:
+        - '\b[12][0-9]{3}\b'
+
+  color:
+    type: list
+    config:
+      name: color
+      case_sensitive: false
+      fuzzy_match: True
+      fuzzy_match_min_search_length: 4
+      values:
+        - name: red
+          synonyms:
+            - salmon
+            - ruby
+            - cherry
+            - scarlet
+            - wine red
+            - carmine
+        - name: yellow
+          synonyms:
+            - lemon
+            - amber
+            - gold
+            - blond
+        - name: blue
+          synonyms:
+            - azure
+            - colbat
+            - navy
+            - ultramarine
+        - name: black
+        - name: white
+
+fallback:
+  name: fallback
+  type: TextResponse
+  config:
+    responses:
+      - Sorry, I'm not quite understand what you mean, please clarify it. Or say `help` to list out all tasks I could do.
+
+config:
+  language: en
+  default_timezone: Asia/Bangkok
+  duckling_endpoint: http://localhost:8000

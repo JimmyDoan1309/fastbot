@@ -17,6 +17,7 @@ class Agent:
         self.controller = builder.load(flow_config_path, **kwargs)
 
     def local_test(self, user_id: str = 'default') -> None:
+        print('Type "\q" to end the conversation')
         raw = input("User: ")
         while raw != '\q':
             message = Message(raw)

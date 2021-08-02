@@ -13,5 +13,5 @@ class TextResponse(BaseNode):
 
     def on_message(self, context: ContextManager) -> NodeResult:
         response = random.choice(self.responses)
-        context.add_response(Response('text', response))
+        context.add_response(Response(response))
         return NodeResult(NodeStatus.DONE, self.next_node)

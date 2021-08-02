@@ -19,5 +19,5 @@ class IntentPrompt(BaseNode):
             return NodeResult(NodeStatus.DONE, self.next_node)
 
         response = random.choice(self.prompts)
-        context.add_response(Response('text', response))
+        context.add_response(Response(response))
         return NodeResult(NodeStatus.WAITING, self.name)

@@ -1,0 +1,90 @@
+intents:
+  affirm:
+    - text: 'yes'
+    - text: absolutely
+    - text: let do it
+    - text: do it please
+    - text: yup
+    - text: just the way i like it
+    - text: yeah yeah
+    - text: please do so
+  deny:
+    - text: 'no'
+    - text: absolutely not
+    - text: no way
+    - text: please don't
+    - text: please do not
+    - text: dont do it
+    - text: nah nah
+    - text: stop
+  smalltalk.bye:
+    - text: bye bye
+    - text: see ya
+    - text: i need to go
+    - text: bye bye
+    - text: byeeeee
+    - text: bai bai
+    - text: see you latter
+    - text: see you soon
+    - text: I have to go right now
+    - text: i'm quitting
+    - text: quit
+  smalltalk.greet:
+    - text: hello
+    - text: hi
+    - text: hola
+    - text: yo
+    - text: wassup
+    - text: hello my man
+    - text: alo alo
+    - text: good evening
+    - text: good morning
+    - text: gud afternoon
+    - text: wave
+    - text: hello from the other side
+  smalltalk.help:
+    - text: what can u do
+    - text: what is your functions
+    - text: how can u help me
+    - text: help
+    - text: your purposes
+    - text: tutorial
+    - text: how to use this
+    - text: help me please
+    - text: manual
+  smalltalk.name:
+    - text: what your name
+    - text: your name
+    - text: how should i call you
+    - text: how can i address you
+    - text: do you have a name
+    - text: tell me your name
+  smalltalk.thank:
+    - text: thank u
+    - text: thanks
+    - text: thank you so much
+    - text: much appreciate
+  action.tell_joke:
+    - text: tell me something funny
+    - text: I need a joke
+    - text: do u know any joke
+    - text: get me a joke
+    - text: I need something fun, like a joke
+    - text: do you have another joke
+  action.tell_fact:
+    - text: Tell me something interesting
+    - text: random fact
+    - text: random interesting fact
+    - text: I'm feeling curious
+    - text: Do you know something interesting
+    - text: random fact of the day please
+    - text: do you have another interesting fact
+  action.find_car:
+    - text: I'm looking for a car
+    - text: buy car
+    - text: find car
+    - text: do you sell car here
+    - text: I want to buy a 2021 toyota camry
+    - text: I'm looking for a mercedes
+    - text: Do you sell honda accord or honda civic here
+    - text: find me a merc s500
