@@ -23,7 +23,6 @@ class BaseNode():
             - NodeResult: do not run `on_message` method and return result to the controller
             or
             - None: continue to run `on_message`
-
         """
         pass
 

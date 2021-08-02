@@ -29,7 +29,7 @@ nodes:
     type: TextResponse
     config:
       responses:
-        - I can tell you some jokes, check the weather and help you fill volunteer form
+        - I can tell you some jokes, some facts, and help you buy a car maybe probably.
     intent_trigger: smalltalk.help
 
   - name: smalltalk.thank
