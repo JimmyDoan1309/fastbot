@@ -72,7 +72,7 @@ def _generate(nlu, skip_entity=False):
         print()
 
 
-def run(inputfile: str = None, outputfile: str = './nlu_data.yaml', skip_entity: bool = False):
+def run(inputfile: str = None, outputfile: str = './nlu_data.yaml', skip_entity: bool = True):
     if inputfile != None and str(inputfile).split('.')[-1] not in ['yaml', 'yml', 'json']:
         raise Exception('input nlu file must in json / yaml format')
     if outputfile.split('.')[-1] not in ['yaml', 'yml', 'json']:

@@ -20,7 +20,7 @@ class SampleCounter(BaseComponent):
         the same type, their name must be different.
         """
         return {
-            'name': 'my_sample_counter',
+            'name': 'sample_counter',
             'type': 'components.SampleCounter'
         }
 
