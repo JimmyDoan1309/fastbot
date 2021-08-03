@@ -4,6 +4,7 @@ from .context import ContextManager, TurnContext
 from .context.memory import MemoryContextManager
 from fastbot.models.message import Message
 from typing import Optional, Union, Dict, Text, Any
+from termcolor import colored
 
 
 class Agent:
@@ -17,15 +18,15 @@ class Agent:
         self.controller = builder.load(flow_config_path, **kwargs)
 
     def local_test(self, user_id: str = 'default') -> None:
-        print('Type "\q" to end the conversation')
-        raw = input("User: ")
+        print(colored('Type "\q" to end the conversation', color='red', attrs=['bold']))
+        raw = input(colored("User: ", color='green', attrs=['bold']))
         while raw != '\q':
             message = Message(raw)
             self.interpreter.process(message)
             result = self.controller.handle_message(message, user_id)
             for resp in result.responses:
-                print(f"Bot: {resp.content}")
-            raw = input("User: ")
+                print(f"{colored('Bot:', color='blue', attrs=['bold'])} {resp.content}")
+            raw = input(colored("User: ", color='green', attrs=['bold']))
 
     def process(self, message: Union[Message, str], user_id: str = 'default', turn_data: Dict[Text, Any] = {}) -> TurnContext:
         if isinstance(message, str):
