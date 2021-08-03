@@ -4,10 +4,17 @@ from fastbot.models.input import InputMapping, InputConfig, EscapeIntentAction
 from typing import Text, List
 
 
+class NextNodeField(fields.Field):
+    def _deserialize(self, value, attr, data, **kwargs):
+        if isinstance(value, Text) or isinstance(value, List):
+            return value
+        raise ValidationError('field must be of type `list` or `str`')
+
+
 class EscapeIntentActionSchema(BaseSchema):
     __cls_model__ = EscapeIntentAction
     intent = fields.String(required=True)
-    next_node = fields.String(required=True)
+    next_node = NextNodeField()
 
 
 class InputMappingSchema(BaseSchema):

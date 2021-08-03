@@ -4,15 +4,6 @@ from . import ContextManager, TurnContext
 
 
 class MemoryContextManager(ContextManager):
-    def __init__(self):
-        super().__init__()
-        self.callstack = []
-        self.history = []
-        self.node_results = {}
-        self.node_params = {}
-        self.node_status = {}
-        self.node_data = {}
-
     def init(self, _id: Text = None):
         return self.__class__()
 
@@ -76,6 +67,11 @@ class MemoryContextManager(ContextManager):
         self.node_data = {}
         if user_data:
             self.user_data = {}
+
+    def reset_node(self, node_name: Text):
+        self.node_data.pop(node_name, None)
+        self.node_results.pop(node_name, None)
+        self.node_status.pop(node_name, None)
 
     def load(self):
         pass

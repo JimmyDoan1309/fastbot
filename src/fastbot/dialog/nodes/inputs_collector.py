@@ -18,6 +18,9 @@ class ITYPE():
 
 
 OVERRIDE_INPUT_FUNCTION = 'when_input_overrided'
+COLLECTED_INPUTS = 'collected_inputs'
+CURRENT_MISSING_INPUT = 'current_missing_input'
+STEP_COUNT = 'step_count'
 
 
 class InputsCollector(BaseNode):
@@ -39,6 +42,9 @@ class InputsCollector(BaseNode):
         self.required_inputs = inputs
         self.entity_extractors = entity_extractors
         self.escape_intent_action = escape_intent_action
+        self.validator = validator
+        if not self.validator:
+            self.validator = lambda v, c: None
 
     def inputs_mapping(self, context: ContextManager) -> Dict[Text, InputConfig]:
         mapping = {}
@@ -48,7 +54,9 @@ class InputsCollector(BaseNode):
 
     def on_enter(self, context: ContextManager):
         node_state = context.get_data(self.name)
-        node_state['step_count'] = {_input.name: 0 for _input in self.required_inputs}
+        node_state[STEP_COUNT] = {_input.name: 0 for _input in self.required_inputs}
+        node_state[COLLECTED_INPUTS] = {}
+        node_state[CURRENT_MISSING_INPUT] = ''
         params = context.get_params(self.name, {})
 
         context.set_data(self.name, node_state)
@@ -58,8 +66,16 @@ class InputsCollector(BaseNode):
         message_intent = context.turn_context.message.intent
         for escape_intent in self.escape_intent_action:
             if escape_intent.intent == message_intent:
+                # input asking count should not increase if escape
+                node_state = context.get_data(self.name)
+                current_missing_input = node_state[CURRENT_MISSING_INPUT]
+                node_state[STEP_COUNT][current_missing_input] -= 1
+
                 context.turn_context.message.intent = None  # Reset intent to avoid infinite loop
-                return NodeResult(NodeStatus.ESCAPE, [self.name, escape_intent.next_node])
+                next_node = escape_intent.next_node
+                if isinstance(next_node, str):
+                    next_node = [next_node]
+                return NodeResult(NodeStatus.ESCAPE, [self.name, *next_node])
 
         if self.entity_extractors:
             self.entity_extractors.process(context.turn_context.message)
@@ -67,19 +83,21 @@ class InputsCollector(BaseNode):
         collected_inputs = self._fill_inputs(context)
         missing_input = self._get_missing_input(collected_inputs, context)
         if not missing_input:
+            context.set_result(self.name, collected_inputs)
             return NodeResult(NodeStatus.DONE, self.next_node)
         else:
             self.prompt(missing_input, context)
 
             node_state = context.get_data(self.name)
-            node_state['step_count'][missing_input.name] += 1
+            node_state[CURRENT_MISSING_INPUT] = missing_input.name
+            node_state[STEP_COUNT][missing_input.name] += 1
             context.set_data(self.name, node_state)
 
             return NodeResult(NodeStatus.WAITING, self.name)
 
     def on_exit(self, context: ContextManager) -> None:
         node_state = context.get_data(self.name)
-        node_state.pop('step_count')
+        node_state = {}
         context.set_data(self.name, node_state)
 
     def prompt(self, input_config: InputConfig, context: ContextManager) -> None:
@@ -89,7 +107,7 @@ class InputsCollector(BaseNode):
             prompts = input_config.prompts
         else:
             node_state = context.get_data(self.name)
-            if node_state['step_count'][input_config.name] > 0:
+            if node_state[STEP_COUNT][input_config.name] > 0:
                 prompts = input_config.reprompts
             else:
                 prompts = input_config.prompts
@@ -102,13 +120,14 @@ class InputsCollector(BaseNode):
             if _input.name not in collected_inputs and not _input.optional:
                 return _input
 
-        # Valida all inputs
-        validate_function = getattr(self, 'validator', lambda v, c: None)
-        missing_inputs = validate_function(collected_inputs, context)
+        # Validate all inputs
+        missing_inputs = self.validator(collected_inputs, context)
         if missing_inputs:
             for iname in missing_inputs:
                 collected_inputs.pop(iname)
-            context.set_result(self.name, collected_inputs)
+            node_state = context.get_data(self.name)
+            node_state[COLLECTED_INPUTS] = collected_inputs
+            context.set_data(self.name, node_state)
             for _input in self.required_inputs:
                 if _input.name not in collected_inputs and not _input.optional:
                     return _input
@@ -188,7 +207,7 @@ class InputsCollector(BaseNode):
             return _parse_default()
 
         node_state = context.get_data(self.name)
-        if node_state['step_count'][input_name] >= iconfig.default_delay_step:
+        if node_state[STEP_COUNT][input_name] >= iconfig.default_delay_step:
             return _parse_default()
 
         return None
@@ -212,23 +231,28 @@ class InputsCollector(BaseNode):
     def _fill_inputs(self, context: ContextManager) -> Dict[Text, Any]:
         inputs = {}
         inputs_mapping = self.inputs_mapping(context)
-        collected_inputs = context.get_result(self.name, {})
 
         node_state = context.get_data(self.name)
+        collected_inputs = node_state[COLLECTED_INPUTS]
+
         override_input_function = getattr(self, OVERRIDE_INPUT_FUNCTION, self._default_override_input)
         for input_name, iconfig in inputs_mapping.items():
-            if node_state['step_count'][iconfig.name] == 0 and iconfig.always_ask:
+            if node_state[STEP_COUNT][iconfig.name] == 0 and iconfig.always_ask:
                 continue
 
             # validator take 3 arguments: itype, value, context
             validator = iconfig.validator if iconfig.validator != None else lambda t, v, c: v
             from_itype = None
             for imap in iconfig.maps:
-                if node_state['step_count'][iconfig.name] == 0 and imap.always_ask:
+                if node_state[STEP_COUNT][iconfig.name] == 0 and imap.always_ask:
                     continue
 
                 if imap.itype == ITYPE.TEXT:
                     text = context.turn_context.message.text
+                    # Avoid empty string for text input
+                    if not text:
+                        value = None
+                        continue
                     value = self._validate_and_assign(input_name, imap, iconfig, text, validator, context)
 
                 elif imap.itype == ITYPE.INTENT:
@@ -256,11 +280,13 @@ class InputsCollector(BaseNode):
         if collected_inputs:
             if (inputs):
                 collected_inputs.update(inputs)
-                context.set_result(self.name, collected_inputs)
+                node_state[COLLECTED_INPUTS] = collected_inputs
+                context.set_data(self.name, node_state)
             return collected_inputs
         else:
             if (inputs):
-                context.set_result(self.name, inputs)
+                node_state[COLLECTED_INPUTS] = inputs
+                context.set_data(self.name, node_state)
             return inputs
 
     def _default_override_input(self, input_name: Text, old_value: Any, new_value: Any, context: ContextManager):

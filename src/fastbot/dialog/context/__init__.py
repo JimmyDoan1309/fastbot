@@ -28,9 +28,12 @@ class ContextManager:
         self.user_data = {}
         self.timestamp = time()
         self.turn_context = TurnContext()
-
-    def init(self, _id: Text = None):
-        raise NotImplementedError()
+        self.callstack = []
+        self.history = []
+        self.node_results = {}
+        self.node_params = {}
+        self.node_status = {}
+        self.node_data = {}
 
     @classmethod
     def set_custom_response_function(cls, function: Callable):
@@ -43,6 +46,9 @@ class ContextManager:
         except Exception as e:
             log.error(e)
             self.turn_context.add_response(response)
+
+    def init(self, _id: Text = None):
+        raise NotImplementedError()
 
     def create_turn_context(self, message: Message, turn_data: Dict[Text, Any] = {}):
         self.turn_context = TurnContext(message, turn_data)
@@ -93,6 +99,9 @@ class ContextManager:
         raise NotImplementedError()
 
     def restart(self) -> None:
+        raise NotImplementedError()
+
+    def reset_node(self, node_name: Text) -> None:
         raise NotImplementedError()
 
     def check_session_timeout(self, timeout_in: float = DEFAULT_SESSION_TIMEOUT) -> None:
