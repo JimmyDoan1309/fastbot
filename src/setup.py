@@ -9,9 +9,9 @@ setuptools.setup(
     description="botengine module",
     packages=setuptools.find_packages(),
     classifiers=[],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
-        'numpy>=1.21',
+        'numpy>=1.19',
         'scikit-learn>=0.23',
         'sklearn_crfsuite>=0.3.6',
         'scipy>=1.7.0',
