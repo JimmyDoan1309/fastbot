@@ -272,7 +272,8 @@ class InputsCollector(BaseNode):
                 # Do something when previously filled input slots get override in the current message
                 if collected_inputs.get(input_name) != value:
                     old_value = collected_inputs.get(input_name)
-                    override_input_function(input_name, old_value, value, context)
+                    value = override_input_function(input_name, old_value, value, context)
+                    inputs[input_name] = value
 
             elif input_name not in collected_inputs.keys() and value:
                 inputs[input_name] = value
