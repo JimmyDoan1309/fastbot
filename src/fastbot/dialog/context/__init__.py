@@ -3,6 +3,7 @@ from fastbot.models import Message, Response, Step
 from fastbot.constants import DEFAULT_SESSION_TIMEOUT
 import logging
 from time import time
+from ..utils import create_user_conversation_id
 
 
 log = logging.getLogger(__name__)
@@ -22,32 +23,24 @@ class TurnContext:
 
 
 class ContextManager:
-    _id = None
-
-    def __init__(self):
-        self.user_data = {}
+    def __init__(self, **kwargs):
         self.timestamp = time()
         self.turn_context = TurnContext()
-        self.callstack = []
-        self.history = []
-        self.node_results = {}
-        self.node_params = {}
-        self.node_status = {}
-        self.node_data = {}
-
-    @classmethod
-    def set_custom_response_function(cls, function: Callable):
-        setattr(cls, 'response_function', function)
+        self.response_function = kwargs.get('response_function')
+        self.user_id = kwargs.get('user_id') or 'default'
+        self.conversation_id = kwargs.get('conversation_id')
 
     def add_response(self, response: Response):
-        response_function = getattr(self.__class__, 'response_function', self.turn_context.add_response)
         try:
-            response_function(response, context=self)
+            if self.response_function:
+                self.response_function(response, context=self)
+            else:
+                self.turn_context.add_response(response)
         except Exception as e:
             log.error(e)
             self.turn_context.add_response(response)
 
-    def init(self, _id: Text = None):
+    def init(self, user_id: Text = None, conversation_id: Text = None, user_data: Dict[Text, Any] = {}):
         raise NotImplementedError()
 
     def create_turn_context(self, message: Message, turn_data: Dict[Text, Any] = {}):
@@ -104,6 +97,9 @@ class ContextManager:
     def reset_node(self, node_name: Text) -> None:
         raise NotImplementedError()
 
+    def update_user_data(self, user_id: Text, data: Dict[Text, Any] = {}) -> None:
+        raise NotImplementedError()
+
     def check_session_timeout(self, timeout_in: float = DEFAULT_SESSION_TIMEOUT) -> None:
         current = time()/3600
         last_message = self.timestamp/3600
@@ -112,3 +108,7 @@ class ContextManager:
 
     def update_session_timestamp(self) -> None:
         self.timestamp = time()
+
+    @property
+    def _id(self):
+        return create_user_conversation_id(self.user_id, self.conversation_id)

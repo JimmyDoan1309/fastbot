@@ -8,6 +8,7 @@ from fastbot.models import Message, Response, Step
 from fastbot.constants import SHORT_CIRCUIT
 from typing import Text, List, Dict, Any, Union, Optional
 from copy import deepcopy
+from .utils import create_user_conversation_id
 
 
 class DialogController:
@@ -19,7 +20,7 @@ class DialogController:
 
         self.nodes = {}
         self.intent_triggers = {}
-        self.user_managers = {}
+        self.context_managers = {}
         self.fallback_node = None
         self.action_policy = action_policy
         self.session_timeout_duration = session_timeout_duration
@@ -40,15 +41,14 @@ class DialogController:
             node = node.name
         self.fallback_node = node
 
-    def get_user_context(self, user_id: Text) -> ContextManager:
-        if not self.user_managers.get(user_id):
-            self.user_managers[user_id] = self._context_type.init(user_id)
+    def get_user_context(self, user_id: Text, conversation_id: Text) -> ContextManager:
+        _id = create_user_conversation_id(user_id, conversation_id)
+        if not self.context_managers.get(_id):
+            self.context_managers[_id] = self._context_type.init(user_id, conversation_id)
+        return self.context_managers[_id]
 
-        return self.user_managers[user_id]
-
-    def inject_user_data(self, user_id: Text, key: Text, value: Any) -> None:
-        user_context = self.get_user_context(user_id)
-        user_context.user_data[key] = value
+    def update_user_data(self, user_id: Text, data: Dict[Text, Any] = {}) -> None:
+        self._context_type.update_user_data(user_id, data)
 
     def find_next_node(self, message: Message, context: ContextManager):
         node = self.intent_triggers.get(message.intent)
@@ -65,13 +65,13 @@ class DialogController:
 
         return None
 
-    def handle_message(self, message: Message, user_id: Text = 'default', turn_data: Dict[Text, Any] = {}) -> TurnContext:
-        user_context = self.get_user_context(user_id)
-        user_context.create_turn_context(message, turn_data)
+    def handle_message(self, message: Message, turn_data: Dict[Text, Any] = {}, user_id: Text = 'default', conversation_id: Text = None) -> TurnContext:
+        user_context = self.get_user_context(user_id, conversation_id)
         user_context.load()
+        user_context.create_turn_context(message, turn_data)
         user_context.check_session_timeout(self.session_timeout_duration)
         user_context.update_session_timestamp()
-        user_context.set_history(Step(intent=message.intent if message.intent else '<UNK>', message=message.__dict__()))
+        user_context.set_history(Step(intent=message.intent if message.intent else '<UNK>', data=message.to_dict()))
 
         # If callstack is empty
         if user_context.is_done():
@@ -80,7 +80,6 @@ class DialogController:
                 user_context.set_callstack(node)
             else:
                 return
-
         step = 1
         while not user_context.is_done():
             if step > SHORT_CIRCUIT:
@@ -103,6 +102,5 @@ class DialogController:
             elif result.status == NodeStatus.RESTART:
                 user_context.restart()
                 break
-
         user_context.save()
         return user_context.turn_context

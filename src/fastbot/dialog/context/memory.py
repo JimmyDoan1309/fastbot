@@ -1,11 +1,38 @@
 from typing import Text, List, Dict, Any, Union, Callable
 from fastbot.models import Message, Response, Step
 from . import ContextManager, TurnContext
+from ..utils import create_user_conversation_id
 
 
 class MemoryContextManager(ContextManager):
-    def init(self, _id: Text = None):
-        return self.__class__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.callstack = []
+        self.history = []
+        self.node_results = {}
+        self.node_params = {}
+        self.node_status = {}
+        self.node_data = {}
+
+        self.user_data = {}
+        self._user_data_manager = {}
+
+    def init(self, user_id: Text, conversation_id: Text = None, user_data: Dict[Text, Any] = {}):
+        assert isinstance(user_data, dict), 'user_data must be a json-serializable python dictionary'
+
+        if not self._user_data_manager.get(user_id):
+            self._user_data_manager[user_id] = {}
+
+        if user_data:
+            self._user_data_manager[user_id].update(user_data)
+
+        ctx = self.__class__(
+            user_id=user_id,
+            conversation_id=conversation_id,
+            response_function=self.response_function,
+        )
+        ctx.user_data = self._user_data_manager[user_id]
+        return ctx
 
     def set_params(self, node_name: Text, value: Any):
         self.node_params[node_name] = value
@@ -79,13 +106,21 @@ class MemoryContextManager(ContextManager):
     def save(self):
         pass
 
-    def json(self):
+    def to_dict(self):
         return {
             'callstack': self.callstack,
-            'history': [step.__dict__() for step in self.history],
+            'history': [step.to_dict() for step in self.history],
             'node_params': self.node_params,
             'node_results': self.node_results,
             'node_data': self.node_data,
             'node_status': self.node_status,
             'timestamp': self.timestamp,
         }
+
+    def update_user_data(self, user_id: Text, data: Dict[Text, Any] = {}):
+        assert isinstance(data, dict), 'user_data must be a json-serializable python dictionary'
+
+        if not self._user_data_manager.get(user_id):
+            self._user_data_manager[user_id] = data
+        else:
+            self._user_data_manager[user_id].update(data)

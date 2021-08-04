@@ -11,7 +11,7 @@ class Step:
         self.hash = f'{self.type}__{intent if intent else action}'
         self.data = kwargs
 
-    def __dict__(self):
+    def to_dict(self):
         result = {
             self.type: self.intent or self.action,
             **self.data

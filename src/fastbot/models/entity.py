@@ -25,7 +25,7 @@ class Entity:
         self.role = role
         self.from_entity = from_entity
 
-    def __dict__(self):
+    def to_dict(self):
         body = {
             'entity': self.entity,
             'value': self.value,
@@ -45,7 +45,7 @@ class Entity:
         return body
 
     def __repr__(self):
-        return json.dumps(self.__dict__(), ensure_ascii=False, indent=2)
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
 
 
 class MeasurementEntityConfig:

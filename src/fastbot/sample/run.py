@@ -6,7 +6,7 @@ def main():
     if not os.path.exists('./model/nlu'):
         raise Exception("Please train the intepreter first by running `python train.py`")
     agent = Agent('./model/nlu', './flow.yaml')
-    agent.local_test()
+    agent.test()
 
 
 if __name__ == '__main__':
