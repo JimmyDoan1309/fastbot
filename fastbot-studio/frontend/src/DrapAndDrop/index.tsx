@@ -15,6 +15,7 @@ import ReactFlow, {
   ReactFlowProvider,
   removeElements,
 } from "react-flow-renderer";
+import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import {
   InputsCollectorNode,
@@ -36,6 +37,10 @@ const nodeTypes = {
   response: ResponseNode,
 };
 
+type Params = {
+  id: string;
+};
+
 const onDragOver = (event: DragEvent) => {
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
@@ -44,6 +49,7 @@ const onDragOver = (event: DragEvent) => {
 const getId = (): ElementId => uuidv4();
 
 const DnDFlow = () => {
+  let { id } = useParams<Params>();
   const [reactFlowInstance, setReactFlowInstance] = useState<OnLoadParams>();
   const [elements, setElements] = useState<Elements>(initialElements);
 
@@ -154,6 +160,7 @@ const DnDFlow = () => {
           >
             <Controls />
             <SaveAndRestore
+              id={id}
               rfInstance={reactFlowInstance}
               setElements={setElements}
             />

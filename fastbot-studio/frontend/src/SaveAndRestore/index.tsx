@@ -1,14 +1,14 @@
-import React, { memo, useCallback, Dispatch, FC } from "react";
+import React, { Dispatch, FC, memo, useCallback } from "react";
 import {
-  useZoomPanHelper,
-  OnLoadParams,
   Elements,
   // FlowExportObject,
   isNode,
+  OnLoadParams,
+  useZoomPanHelper,
 } from "react-flow-renderer";
+import { getBotByIdAPI, saveBotDataAPI } from "../services/data-flow-services";
 // import localforage from "localforage";
 import "./save.css";
-import { saveBotDataAPI, getBotByIdAPI } from "../services/data-flow-services";
 
 // localforage.config({
 //   name: "react-flow",
@@ -18,11 +18,12 @@ import { saveBotDataAPI, getBotByIdAPI } from "../services/data-flow-services";
 // const flowKey = "example-flow";
 
 type ControlsProps = {
+  id: string;
   rfInstance?: OnLoadParams;
   setElements: Dispatch<React.SetStateAction<Elements<any>>>;
 };
 
-const SaveRestore: FC<ControlsProps> = ({ rfInstance, setElements }) => {
+const SaveRestore: FC<ControlsProps> = ({ id, rfInstance, setElements }) => {
   const { transform } = useZoomPanHelper();
 
   const onSave = useCallback(() => {
@@ -39,22 +40,20 @@ const SaveRestore: FC<ControlsProps> = ({ rfInstance, setElements }) => {
       });
       let newFlow = flow;
       newFlow.elements = newElements;
-      saveBotDataAPI("20d11f9a-b313-44fc-9ab8-9e6b1ff3479c", newFlow);
+      saveBotDataAPI(id, newFlow);
       // localforage.setItem(flowKey, newFlow);
     }
-  }, [rfInstance]);
+  }, [id, rfInstance]);
 
   const onRestore = useCallback(() => {
     const restoreFlow = async () => {
-      const botInfo = await getBotByIdAPI(
-        "20d11f9a-b313-44fc-9ab8-9e6b1ff3479c"
-      );
+      const botInfo = await getBotByIdAPI(id);
       let flow;
       if (botInfo) {
         flow = botInfo.data;
       }
 
-      if (flow) {
+      if (Object.keys(flow).length !== 0) {
         const [x = 0, y = 0] = flow.position;
         setElements(flow.elements || []);
         transform({ x, y, zoom: flow.zoom || 0 });
@@ -62,7 +61,7 @@ const SaveRestore: FC<ControlsProps> = ({ rfInstance, setElements }) => {
     };
 
     restoreFlow();
-  }, [setElements, transform]);
+  }, [id, setElements, transform]);
 
   return (
     <div className="save__controls">

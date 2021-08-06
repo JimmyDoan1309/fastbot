@@ -1,13 +1,12 @@
 import axiosInstance from "./axios-instance";
 
-export const createBotsAPI = async () => {
-  const data = null;
+export const createBotsAPI = async (data: any) => {
   const url = "/bot/create";
-  let result;
+  let result = false;
   await axiosInstance
     .post(url, data)
-    .then((res) => {
-      result = res.data;
+    .then(() => {
+      result = true;
     })
     .catch((error) => console.error(error));
   return result;
