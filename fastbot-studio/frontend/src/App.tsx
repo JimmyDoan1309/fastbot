@@ -10,7 +10,7 @@ function App() {
         <Route path="/home">
           <HomePage />
         </Route>
-        <Route path="/flow/:id">
+        <Route path="/flow/:id/workflow">
           <DrapAndDrop />
         </Route>
         <Route path="/">

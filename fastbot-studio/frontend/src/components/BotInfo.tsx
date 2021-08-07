@@ -43,7 +43,11 @@ const MediaCard: React.FC<Props> = ({ bot, handleDelete }) => {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button href={`/flow/${bot.botId}`} size="small" color="primary">
+        <Button
+          href={`/flow/${bot.botId}/workflow`}
+          size="small"
+          color="primary"
+        >
           View Flow
         </Button>
         <Button
