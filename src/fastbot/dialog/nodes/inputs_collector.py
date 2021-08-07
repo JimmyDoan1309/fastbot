@@ -53,14 +53,15 @@ class InputsCollector(BaseNode):
         return mapping
 
     def on_enter(self, context: ContextManager):
-        node_state = context.get_data(self.name)
+        node_state = {}
         node_state[STEP_COUNT] = {_input.name: 0 for _input in self.required_inputs}
         node_state[COLLECTED_INPUTS] = {}
         node_state[CURRENT_MISSING_INPUT] = ''
+
         params = context.get_params(self.name, {})
+        node_state.update(params)
 
         context.set_data(self.name, node_state)
-        context.set_result(self.name, params)
 
     def on_message(self, context: ContextManager) -> NodeResult:
         message_intent = context.turn_context.message.intent
