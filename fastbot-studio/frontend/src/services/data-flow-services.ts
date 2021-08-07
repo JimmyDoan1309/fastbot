@@ -51,11 +51,11 @@ export const updateBotByIdAPI = async (id: string) => {
 
 export const deleteBotByIdAPI = async (id: string) => {
   const url = `/bot/${id}`;
-  let result;
+  let result = false;
   await axiosInstance
     .delete(url)
-    .then((res) => {
-      result = res.data;
+    .then(() => {
+      result = true;
     })
     .catch((error) => console.error(error));
   return result;
