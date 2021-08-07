@@ -1,0 +1,20 @@
+pipeline:
+  - type: CasingProcessor
+    name: casing_processor
+  - type: PunctuationRemover
+    name: punctuation_remover
+  - type: TfidfVectorizer
+    name: tfidf_1
+  - type: TfidfVectorizer
+    name: tfidf_2
+    arguments:
+      config:
+        analyzer: char_wb
+        ngram_range: [2, 5]
+  - type: NeuralNetClassifier
+    name: classifier
+    arguments:
+      config:
+        hidden_layer_sizes: [200, 100]
+        max_iter: 500
+      confident_threshold: 0.8

@@ -1,0 +1,44 @@
+intents:
+  affirm:
+    - text: 'yes'
+    - text: absolutely
+    - text: let do it
+    - text: do it please
+    - text: yup
+    - text: just the way i like it
+    - text: yeah yeah
+    - text: please do so
+  deny:
+    - text: 'no'
+    - text: absolutely not
+    - text: no way
+    - text: please don't
+    - text: please do not
+    - text: dont do it
+    - text: nah nah
+    - text: stop
+  smalltalk.bye:
+    - text: bye bye
+    - text: see ya
+    - text: i need to go
+    - text: bye bye
+    - text: byeeeee
+    - text: bai bai
+    - text: see you latter
+    - text: see you soon
+    - text: I have to go right now
+    - text: i'm quitting
+    - text: quit
+  smalltalk.greet:
+    - text: hello
+    - text: hi
+    - text: hola
+    - text: yo
+    - text: wassup
+    - text: hello my man
+    - text: alo alo
+    - text: good evening
+    - text: good morning
+    - text: gud afternoon
+    - text: wave
+    - text: hello from the other side

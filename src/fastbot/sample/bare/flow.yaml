@@ -1,0 +1,30 @@
+nodes:
+  - name: smalltalk.greet
+    type: TextResponse
+    config:
+      responses:
+        - Hello
+        - Hi
+        - Hola
+    intent_trigger: smalltalk.greet
+
+  - name: smalltalk.bye
+    type: TextResponse
+    config:
+      responses:
+        - Bye
+        - See ya
+        - Good bye
+    intent_trigger: smalltalk.bye
+
+fallback:
+  name: fallback
+  type: TextResponse
+  config:
+    responses:
+      - Sorry, I'm not quite understand what you mean.
+
+config:
+  language: en
+  default_timezone: Asia/Bangkok
+  duckling_endpoint: http://localhost:8000
