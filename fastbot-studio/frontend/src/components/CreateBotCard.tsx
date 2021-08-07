@@ -21,10 +21,10 @@ interface Props {
 
 const useStyles = makeStyles({
   root: {
-    maxWidth: 345,
+    width: 350,
+    height: 250,
     margin: "0 auto",
     marginTop: "20px",
-    height: 318.8,
   },
   media: {
     height: "100%",
