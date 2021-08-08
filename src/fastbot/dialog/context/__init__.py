@@ -85,10 +85,10 @@ class ContextManager:
     def result(self, delete: bool = True):
         raise NotImplementedError()
 
-    def load(self) -> None:
+    def load(self, **kwargs) -> None:
         raise NotImplementedError()
 
-    def save(self) -> None:
+    def save(self, **kwargs) -> None:
         raise NotImplementedError()
 
     def restart(self) -> None:

@@ -67,7 +67,7 @@ class DialogController:
 
     def handle_message(self, message: Message, turn_data: Dict[Text, Any] = {}, user_id: Text = 'default', conversation_id: Text = None) -> TurnContext:
         user_context = self.get_user_context(user_id, conversation_id)
-        user_context.load()
+        user_context.load(message_id=message.id)
         user_context.create_turn_context(message, turn_data)
         user_context.check_session_timeout(self.session_timeout_duration)
         user_context.update_session_timestamp()

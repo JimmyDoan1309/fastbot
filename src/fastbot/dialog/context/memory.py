@@ -100,10 +100,10 @@ class MemoryContextManager(ContextManager):
         self.node_results.pop(node_name, None)
         self.node_status.pop(node_name, None)
 
-    def load(self):
+    def load(self, **kwargs):
         pass
 
-    def save(self):
+    def save(self, **kwargs):
         pass
 
     def to_dict(self):
