@@ -102,5 +102,5 @@ class DialogController:
             elif result.status == NodeStatus.RESTART:
                 user_context.restart()
                 break
-        user_context.save()
+        user_context.save(message_id=message.id)
         return user_context.turn_context

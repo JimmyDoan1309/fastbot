@@ -90,9 +90,9 @@ class MongoContextMananger(MemoryContextManager):
             self.contexts_col.find_one_and_update({'_id': self._id}, {'$push': {'lockQueue': message_id}})
 
         # Retry acquire the lock after a random amount of time to avoid split brain
-        # where two instance
+        # where two instance try to acquire the lock at the sametime therefor both fail
         while context_data is None:
-            wait = 0.05+random()/4
+            wait = 0.05+random()/4  # wait between 50ms ~ 300ms before try again
             sleep(wait)
             context_data = self.contexts_col.find_one_and_update(
                 {'_id': self._id, '$or': [
@@ -124,10 +124,10 @@ class MongoContextMananger(MemoryContextManager):
         history = context_data.get('history', [])
         self.history = StepSchema(many=True).load(history)
 
-    def save(self):
+    def save(self, message_id: Text):
         dump = self.to_dict()
         self.contexts_col.update_one(
-            {'_id': self._id},
+            {'_id': self._id, 'lockOwner': message_id},
             {'$set': {
                 'data': dump,
                 'lockTimeout': time()+self.timeout_after,
