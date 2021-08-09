@@ -1,4 +1,4 @@
-import React, { DragEvent, useState } from "react";
+import React, { DragEvent, MouseEvent, useState } from "react";
 import ReactFlow, {
   addEdge,
   ArrowHeadType,
@@ -9,7 +9,9 @@ import ReactFlow, {
   Edge,
   ElementId,
   Elements,
+  FlowElement,
   isEdge,
+  isNode,
   Node,
   OnLoadParams,
   ReactFlowProvider,
@@ -17,6 +19,7 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import SelectedElementConfig from "../components/SelectedElementConfig";
 import {
   InputsCollectorNode,
   IntentNode,
@@ -52,6 +55,7 @@ const DnDFlow = () => {
   let { id } = useParams<Params>();
   const [reactFlowInstance, setReactFlowInstance] = useState<OnLoadParams>();
   const [elements, setElements] = useState<Elements>(initialElements);
+  const [selectedElement, setSelectedElement] = useState<FlowElement | null>();
 
   const onChange = (id: string, newLable: string) => {
     const updateElements = elements.map((element) => {
@@ -72,6 +76,7 @@ const DnDFlow = () => {
         return edgeElement;
       } else {
         let nodeElement = element as Node;
+        console.log(nodeElement.style);
         nodeElement = {
           ...element,
           data: {
@@ -80,6 +85,7 @@ const DnDFlow = () => {
             onChange: onChange,
           },
           style: {
+            ...element.style,
             padding: "10px",
             borderRadius: "3px",
             width: "150px",
@@ -88,7 +94,7 @@ const DnDFlow = () => {
             textAlign: "center",
             borderWidth: "2px",
             borderStyle: "solid",
-            background: "#fff",
+            // background: "#fff",
             borderColor:
               element.type === "intent"
                 ? "blue"
@@ -118,6 +124,34 @@ const DnDFlow = () => {
   const onElementsRemove = (elementsToRemove: Elements) =>
     setElements((els) => removeElements(elementsToRemove, els));
 
+  const onElementClick = (_: MouseEvent, element: FlowElement) => {
+    setSelectedElement(element);
+    setElements((els) =>
+      els.map((el) => {
+        if (el.id === element.id) {
+          el.style = {
+            ...el.style,
+            boxShadow:
+              "rgb(0 0 0 / 50%) 0px 4px 8px 0px, rgb(0 0 0 / 20%) 0px 6px 20px 0px",
+          };
+        } else {
+          el.style = { ...el.style, boxShadow: "unset" };
+        }
+        return el;
+      })
+    );
+  };
+
+  const onPanelClick = () => {
+    setSelectedElement(null);
+    setElements((els) =>
+      els.map((el) => {
+        el.style = { ...el.style, boxShadow: "unset" };
+        return el;
+      })
+    );
+  };
+
   const onLoad = (_reactFlowInstance: OnLoadParams) =>
     setReactFlowInstance(_reactFlowInstance);
 
@@ -146,11 +180,19 @@ const DnDFlow = () => {
   return (
     <div className="dndflow">
       <ReactFlowProvider>
+        {/* Selected Element Properties */}
+        {selectedElement && isNode(selectedElement) ? (
+          <SelectedElementConfig node={selectedElement as Node} />
+        ) : null}
+        {/* Reactflow Wrapper */}
         <div className="reactflow-wrapper">
           <ReactFlow
             elements={convertArrowHead(elements)}
             onConnect={onConnect}
             onElementsRemove={onElementsRemove}
+            onElementClick={onElementClick}
+            elementsSelectable={true}
+            onPaneClick={onPanelClick}
             deleteKeyCode={DELETE_KEY}
             onLoad={onLoad}
             onDrop={onDrop}
