@@ -45,21 +45,21 @@ class ExternalVectorizer(Vectorizer):
         return pickle.loads(bytes(resp.content))
 
     def train(self, data: NluData):
-        if data.status.is_vectorized:
-            return
-
         for samples in data.intents.values():
-            data = [{
+            request_data = [{
                 "raw_text": sample.text,
                 "processed_text": sample.nlu_cache.processed_text,
                 "tokens": sample.nlu_cache.tokens
             } for sample in samples]
-            results = self._vectorized(data)
+            results = self._vectorized(request_data)
             for sample, result in zip(samples, results):
                 sample.nlu_cache.dense_embedding_vector = result
 
-        data.status.is_vectorized = True
-
     def process(self, message: Message):
-        results = self._vectorized([message.nlu_cache.tokens])
+        request_data = [{
+            'raw_text': message.text,
+            'processed_text': message.nlu_cache.processed_text,
+            'tokens': message.nlu_cache.tokens
+        }]
+        results = self._vectorized(request_data)
         message.nlu_cache.dense_embedding_vector = results[0]
