@@ -13,6 +13,8 @@ from fastbot.dialog.context.memory import MemoryContextManager
 from typing import Text, List, Dict, Any, Optional, Union
 import json
 import yaml
+import sys
+import os
 
 registered_nodes = [
     TextResponse,
@@ -40,9 +42,14 @@ class DialogControlBuilder:
                 config = yaml.load(fp, Loader=yaml.FullLoader)
             else:
                 raise Exception("Flow config must be .json or .yaml file")
-        return self.loads(config, **kwargs)
+        return self.loads(config, path=path, **kwargs)
 
     def loads(self, dialog_config: Dict[Text, Any], **kwargs) -> DialogController:
+        path = kwargs.get('path')
+        directory = os.path.abspath(os.path.dirname(path))
+        if directory not in sys.path:
+            sys.path.append(directory)
+
         nodes = dialog_config["nodes"]
         config = dialog_config.get("config", {})
         entities = dialog_config.get("entities", {})

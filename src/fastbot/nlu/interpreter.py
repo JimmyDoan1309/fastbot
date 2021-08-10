@@ -9,6 +9,7 @@ import os
 import shutil
 import json
 import re
+import sys
 
 
 class Interpreter:
@@ -109,7 +110,18 @@ class Interpreter:
 
     @classmethod
     def load(cls, path: Text, **kwargs):
-        with open(f'{path}/metadata.json', 'r') as fp:
+        if not path.endswith('/'):
+            path += '/'
+
+        directory = os.path.abspath(os.path.dirname(path))
+        # This assume the model is saved 2 folders deep (/model/nlu) compare to
+        # the bot code where all custom components is resigned.
+        directory = '/'.join(directory.split('/')[:-2])
+
+        if directory not in sys.path:
+            sys.path.append(directory)
+
+        with open(os.path.join(path, 'metadata.json'), 'r') as fp:
             metadata = json.load(fp)
 
         components = []
