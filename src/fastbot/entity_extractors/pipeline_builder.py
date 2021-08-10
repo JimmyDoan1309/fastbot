@@ -71,7 +71,7 @@ class ExtractorPipelineBuilder:
         else:
             self.extractor_cache[key] = [value]
 
-    def _create_pipeline(self, entity_configs: List[Dict[Text, Any]], based_on: [Dict[Text, Any]]):
+    def _create_pipeline(self, entity_configs: List[Dict[Text, Any]], based_on: Dict[Text, Any]):
         for entity in entity_configs:
             if entity['type'] == 'measurement':
                 config = MeasurementEntityConfigSchema().load(entity['config'])
