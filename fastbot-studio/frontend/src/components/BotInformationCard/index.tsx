@@ -1,55 +1,25 @@
+import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-import Avatar from "@material-ui/core/Avatar";
-import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import Bot from "../inferfaces/Bot";
+import Bot from "../../inferfaces/Bot";
+import "./index.scss";
 
 interface Props {
   bot: Bot;
   handleDelete: (id: string) => void;
 }
 
-const useStyles = makeStyles({
-  root: {
-    width: 350,
-    height: 250,
-    margin: "0 auto",
-    marginTop: "20px",
-  },
-  avatar: {
-    height: 100,
-    width: 100,
-    fontSize: 50,
-    fontWeight: "bold",
-  },
-  avatarDiv: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  buttonsGroup: {
-    "& > *": {
-      marginRight: 5,
-    },
-  },
-});
-
-const MediaCard: React.FC<Props> = ({ bot, handleDelete }) => {
-  const classes = useStyles();
+const BotInformationCard: React.FC<Props> = ({ bot, handleDelete }) => {
   return (
-    <Card className={classes.root}>
+    <Card className="bot-card">
       <CardActionArea>
-        <div className={classes.avatarDiv}>
-          <Avatar src={bot.avatarUrl} className={classes.avatar}>
+        <div className="avatar-div">
+          <Avatar src={bot.avatarUrl} className="avatar">
             {bot.name[0].toUpperCase()}
           </Avatar>
         </div>
@@ -60,8 +30,8 @@ const MediaCard: React.FC<Props> = ({ bot, handleDelete }) => {
           </Typography>
         </CardContent>
       </CardActionArea>
-      <CardActions className={classes.actions}>
-        <div className={classes.buttonsGroup}>
+      <CardActions className="actions">
+        <div className="buttons-group">
           <Button
             href={`/bot/${bot.botId}/workflow`}
             size="small"
@@ -85,4 +55,4 @@ const MediaCard: React.FC<Props> = ({ bot, handleDelete }) => {
   );
 };
 
-export default MediaCard;
+export default BotInformationCard;

@@ -1,0 +1,9 @@
+.config-left-aside {
+  position: fixed;
+  height: 100vh;
+  z-index: 5;
+}
+
+.text-field {
+  width: 100%;
+}

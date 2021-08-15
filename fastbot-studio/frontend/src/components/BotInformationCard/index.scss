@@ -1,0 +1,30 @@
+.bot-card {
+  width: 350px;
+  height: 250px;
+  margin: 0 auto;
+  margin-top: 20px;
+
+  .avatar {
+    height: 100px;
+    width: 100px;
+    font-size: 50px;
+    font-weight: "bold";
+  }
+
+  .avatar-div {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .buttons-group {
+    & > * {
+      margin-right: 5;
+    }
+  }
+}

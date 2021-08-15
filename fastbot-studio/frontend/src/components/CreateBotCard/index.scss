@@ -1,0 +1,29 @@
+.create-card {
+  width: 350px;
+  height: 250px;
+  margin: 0 auto;
+  margin-top: 20px;
+
+  .form {
+    padding: 15px;
+  }
+
+  .form-control {
+    width: 100%;
+  }
+
+  .button {
+    display: block;
+    margin: 0 auto;
+    margin-top: 20px;
+  }
+
+  .icon-button {
+    height: 100%;
+    width: 100%;
+  }
+
+  .media {
+    height: 100%;
+  }
+}

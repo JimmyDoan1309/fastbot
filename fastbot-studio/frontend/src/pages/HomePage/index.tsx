@@ -1,13 +1,13 @@
 import { Grid } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
-import BotInfo from "../components/BotInfo";
-import CreateBotCard from "../components/CreateBotCard";
-import Bot from "../inferfaces/Bot";
+import BotInformationCard from "../../components/BotInformationCard";
+import CreateBotCard from "../../components/CreateBotCard";
+import Bot from "../../inferfaces/Bot";
 import {
   createBotsAPI,
   deleteBotByIdAPI,
   getAllBotsAPI,
-} from "../services/data-flow-services";
+} from "../../services/data-flow-services";
 
 interface CreateBot {
   timezone: string;
@@ -60,8 +60,8 @@ const HomePage = () => {
     <React.Fragment>
       <Grid container>
         {bots?.map((bot) => (
-          <Grid item sm={6} md={4} lg={3}>
-            <BotInfo bot={bot} handleDelete={handleDeleteBot} />
+          <Grid item sm={6} md={4} lg={3} key={bot.botId}>
+            <BotInformationCard bot={bot} handleDelete={handleDeleteBot} />
           </Grid>
         ))}
         <Grid item sm={6} md={4} lg={3}>

@@ -19,14 +19,14 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import SelectedElementConfig from "../components/SelectedElementConfig";
+import ConfigNodePanel from "../../components/ConfigNodePanel";
+import SaveAndRestore from "../../components/SaveAndRestore";
 import {
   InputsCollectorNode,
   IntentNode,
   ProcessNode,
   ResponseNode,
-} from "../CustomNode";
-import SaveAndRestore from "../SaveAndRestore";
+} from "../../CustomNode";
 import "./dnd.css";
 import Sidebar from "./Sidebar";
 
@@ -54,17 +54,41 @@ const getId = (): ElementId => uuidv4();
 const DnDFlow = () => {
   let { id } = useParams<Params>();
   const [reactFlowInstance, setReactFlowInstance] = useState<OnLoadParams>();
-  const [elements, setElements] = useState<Elements>(initialElements);
+  const [totalElements, setElements] = useState<Elements>(initialElements);
   const [selectedElement, setSelectedElement] = useState<FlowElement | null>();
 
   const onChange = (id: string, newLable: string) => {
-    const updateElements = elements.map((element) => {
+    const updateElements = totalElements.map((element) => {
       if (element.id === id) {
         element.data.label = newLable;
       }
       return element;
     });
     setElements(updateElements);
+  };
+
+  const onAddNewSample = (id: string, newSample: string) => {
+    const updateElements = totalElements.map((element) => {
+      if (element.id === id) {
+        if (!element.data.samples) {
+          element.data.samples = [];
+        }
+        element.data.samples = [...element.data.samples, newSample];
+        setSelectedElement(element);
+      }
+      return element;
+    });
+    setElements(updateElements);
+  };
+
+  const onDeleteSample = (id: string, sampleId: number) => {
+    const tempTotalElement = totalElements.map((element) => {
+      if (element.id === id) {
+        (element.data.samples as string[]).splice(sampleId, 1);
+      }
+      return element;
+    });
+    setElements(tempTotalElement);
   };
 
   const convertArrowHead = (elements: Elements) => {
@@ -76,14 +100,8 @@ const DnDFlow = () => {
         return edgeElement;
       } else {
         let nodeElement = element as Node;
-        console.log(nodeElement.style);
         nodeElement = {
           ...element,
-          data: {
-            ...element.data,
-            id: element.id,
-            onChange: onChange,
-          },
           style: {
             ...element.style,
             padding: "10px",
@@ -94,7 +112,7 @@ const DnDFlow = () => {
             textAlign: "center",
             borderWidth: "2px",
             borderStyle: "solid",
-            // background: "#fff",
+            background: "#fff",
             borderColor:
               element.type === "intent"
                 ? "blue"
@@ -162,17 +180,32 @@ const DnDFlow = () => {
       const type = event.dataTransfer.getData("application/reactflow");
       const position = reactFlowInstance.project({
         x: event.clientX,
-        y: event.clientY - 40,
+        y: event.clientY,
       });
-      const newNode: Node = {
-        id: getId(),
-        type,
-        position,
-        data: {
-          label: `${capitalizeFirstLetter(type)} Node `,
-        },
-      };
-
+      const newId = getId();
+      let newNode: Node;
+      if (type === "intent") {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            label: `${capitalizeFirstLetter(type)} Node `,
+            samples: [],
+          },
+        };
+      } else {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            label: `${capitalizeFirstLetter(type)} Node `,
+          },
+        };
+      }
       setElements((es) => es.concat(newNode));
     }
   };
@@ -182,12 +215,17 @@ const DnDFlow = () => {
       <ReactFlowProvider>
         {/* Selected Element Properties */}
         {selectedElement && isNode(selectedElement) ? (
-          <SelectedElementConfig node={selectedElement as Node} />
+          <ConfigNodePanel
+            node={selectedElement as Node}
+            onChange={onChange}
+            onAddNewSample={onAddNewSample}
+            onDeleteSample={onDeleteSample}
+          />
         ) : null}
         {/* Reactflow Wrapper */}
         <div className="reactflow-wrapper">
           <ReactFlow
-            elements={convertArrowHead(elements)}
+            elements={convertArrowHead(totalElements)}
             onConnect={onConnect}
             onElementsRemove={onElementsRemove}
             onElementClick={onElementClick}

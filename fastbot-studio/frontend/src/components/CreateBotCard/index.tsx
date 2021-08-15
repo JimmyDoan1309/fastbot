@@ -7,9 +7,9 @@ import {
 } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
-import { makeStyles } from "@material-ui/core/styles";
 import { AddCircle } from "@material-ui/icons";
 import React from "react";
+import "./index.scss";
 
 interface Props {
   handleSubmit: (
@@ -19,21 +19,7 @@ interface Props {
   ) => void;
 }
 
-const useStyles = makeStyles({
-  root: {
-    width: 350,
-    height: 250,
-    margin: "0 auto",
-    marginTop: "20px",
-  },
-  media: {
-    height: "100%",
-  },
-});
-
 const MediaCard: React.FC<Props> = ({ handleSubmit }) => {
-  const classes = useStyles();
-
   const [name, setName] = React.useState("");
   const [avatarUrl, setAvatarUrl] = React.useState(
     "http://www.chiemtaimobile.vn/images/Xiaomi/Xiaomi%20kh%C3%A1c/robot%20Xiaodan/robot.jpg?1530246679505"
@@ -49,15 +35,15 @@ const MediaCard: React.FC<Props> = ({ handleSubmit }) => {
 
   const renderCreateForm = () => {
     return (
-      <Card className={classes.root}>
-        <form onSubmit={handleSubmitChild} style={{ padding: 15 }}>
+      <Card className="create-card">
+        <form onSubmit={handleSubmitChild} className="form">
           <Typography gutterBottom variant="h5" component="h2" align="center">
             Create Bot
           </Typography>
           <Typography gutterBottom variant="body2" component="body">
             Information:
           </Typography>
-          <FormControl style={{ width: "100%" }}>
+          <FormControl className="form-control">
             <InputLabel htmlFor="my-input-name">Name</InputLabel>
             <Input
               id="my-input-name"
@@ -68,7 +54,7 @@ const MediaCard: React.FC<Props> = ({ handleSubmit }) => {
               }
             />
           </FormControl>
-          <FormControl style={{ width: "100%" }}>
+          <FormControl className="form-control">
             <InputLabel htmlFor="my-input-avatar-url">Avatar URL</InputLabel>
             <Input
               id="my-input-avatar-url"
@@ -81,7 +67,7 @@ const MediaCard: React.FC<Props> = ({ handleSubmit }) => {
           </FormControl>
           <Button
             type="submit"
-            style={{ display: "block", margin: "0 auto", marginTop: 20 }}
+            className="button"
             color="primary"
             variant="contained"
           >
@@ -96,8 +82,8 @@ const MediaCard: React.FC<Props> = ({ handleSubmit }) => {
     return renderCreateForm();
   } else {
     return (
-      <Card className={classes.root}>
-        <IconButton style={{ height: "100%", width: "100%" }}>
+      <Card className="create-card">
+        <IconButton className="icon-button">
           <AddCircle
             style={{ fontSize: 100 }}
             onClick={() => setToggle(!toggle)}
