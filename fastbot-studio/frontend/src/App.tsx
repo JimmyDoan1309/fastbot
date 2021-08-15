@@ -1,7 +1,6 @@
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import "./App.css";
-import DrapAndDrop from "./DrapAndDrop";
-import HomePage from "./pages/HomePage";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BotFlowPage, HomePage } from "./pages";
 
 function App() {
   return (
@@ -11,7 +10,7 @@ function App() {
           <HomePage />
         </Route>
         <Route path="/bot/:id/workflow">
-          <DrapAndDrop />
+          <BotFlowPage />
         </Route>
         <Route path="/">
           <HomePage />

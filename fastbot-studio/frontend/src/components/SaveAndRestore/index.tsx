@@ -1,21 +1,10 @@
-import React, { Dispatch, FC, memo, useCallback } from "react";
+import React, { Dispatch, FC, memo, useCallback, useEffect } from "react";
+import { Elements, OnLoadParams, useZoomPanHelper } from "react-flow-renderer";
 import {
-  Elements,
-  // FlowExportObject,
-  isNode,
-  OnLoadParams,
-  useZoomPanHelper,
-} from "react-flow-renderer";
-import { getBotByIdAPI, saveBotDataAPI } from "../services/data-flow-services";
-// import localforage from "localforage";
+  getBotByIdAPI,
+  saveBotDataAPI,
+} from "../../services/data-flow-services";
 import "./save.css";
-
-// localforage.config({
-//   name: "react-flow",
-//   storeName: "flows",
-// });
-
-// const flowKey = "example-flow";
 
 type ControlsProps = {
   id: string;
@@ -25,25 +14,6 @@ type ControlsProps = {
 
 const SaveRestore: FC<ControlsProps> = ({ id, rfInstance, setElements }) => {
   const { transform } = useZoomPanHelper();
-
-  const onSave = useCallback(() => {
-    if (rfInstance) {
-      const flow = rfInstance.toObject();
-      const newElements = flow.elements;
-      newElements.map((element) => {
-        if (isNode(element)) {
-          element.data = {
-            label: element.data.label,
-          };
-        }
-        return element;
-      });
-      let newFlow = flow;
-      newFlow.elements = newElements;
-      saveBotDataAPI(id, newFlow);
-      // localforage.setItem(flowKey, newFlow);
-    }
-  }, [id, rfInstance]);
 
   const onRestore = useCallback(() => {
     const restoreFlow = async () => {
@@ -62,6 +32,17 @@ const SaveRestore: FC<ControlsProps> = ({ id, rfInstance, setElements }) => {
 
     restoreFlow();
   }, [id, setElements, transform]);
+
+  useEffect(() => {
+    onRestore();
+  }, [id, onRestore]);
+
+  const onSave = useCallback(() => {
+    if (rfInstance) {
+      const flow = rfInstance.toObject();
+      saveBotDataAPI(id, flow);
+    }
+  }, [id, rfInstance]);
 
   return (
     <div className="save__controls">
