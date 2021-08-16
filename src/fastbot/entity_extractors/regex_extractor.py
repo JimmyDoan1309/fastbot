@@ -13,7 +13,6 @@ class RegexExtractor(Extractor):
 
     def __init__(self, entity_config: Union[Dict, RegexEntityConfig], **kwargs):
         super().__init__(**kwargs)
-
         if isinstance(entity_config, Dict):
             from fastbot.schema.entity import RegexEntityConfigSchema
             entity_config = RegexEntityConfigSchema().load(entity_config)
@@ -32,8 +31,12 @@ class RegexExtractor(Extractor):
             for m in re.finditer(pattern, text):
                 start_index = m.start(0)
                 end_index = m.end(0)
+                value = m.group()
+                if m.groupdict():
+                    value = {k: v for k, v in m.groupdict().items()}
+                    value['text'] = m.group()
                 entities.append(self.convert_to_entity(
-                    m.group(),
+                    value,
                     start_index,
                     end_index,
                 ))
