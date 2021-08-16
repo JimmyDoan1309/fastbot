@@ -11,7 +11,6 @@ class BaseNode():
         self.type = self.__class__.__name__
         self.next_node = kwargs.get('next_node', None)
         self.debug = kwargs.get('debug', False)
-        self.config = kwargs
 
     def to_dict(self):
         return {'name': self.name}
@@ -47,7 +46,7 @@ class BaseNode():
     def run(self, context: ContextManager) -> NodeResult:
 
         status = context.get_status(self.name)
-        if not status or status == NodeStatus.READY:
+        if not status or status in [NodeStatus.READY, NodeStatus.DONE]:
             context.set_status(self.name, NodeStatus.BEGIN)
             enter_result = self.on_enter(context)  # pylint: disable=assignment-from-no-return
             if enter_result:

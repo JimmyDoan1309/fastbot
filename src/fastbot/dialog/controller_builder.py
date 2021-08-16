@@ -10,7 +10,7 @@ from fastbot.entity_extractors.pipeline_builder import ExtractorPipelineBuilder
 from fastbot.utils.common import import_from_path
 from fastbot.dialog.context import ContextManager
 from fastbot.dialog.context.memory import MemoryContextManager
-from typing import Text, List, Dict, Any, Optional, Union
+from typing import Text, List, Dict, Any, Optional, Union, Type
 import json
 import yaml
 import sys
@@ -59,32 +59,16 @@ class DialogControlBuilder:
 
         for node_config in nodes:
             if node_config['type'] == InputsCollector.__name__:
-
-                node_entities = node_config['config'].get('entities', [])
-                entity_extractors = ExtractorPipelineBuilder(node_entities, entities, **config).build()
-
-                escape_intent_action = node_config['config'].get('escape_intent_action', [])
-                validator = node_config['config'].get('validator')
-
-                if validator:
-                    validator = import_from_path(validator)
-
-                node = InputsCollector(
-                    node_config['name'],
-                    node_config['config']['inputs'],
-                    entity_extractors,
-                    escape_intent_action,
-                    validator,
-                    next_node=node_config.get('next_node'))
+                node = self._create_inputs_collector_node(node_config, config, entities, InputsCollector)
             else:
                 node_class = node_mapping.get(node_config['type'])
                 if not node_class:
                     node_class = import_from_path(node_config['type'])
 
-                node = node_class(
-                    node_config['name'],
-                    **node_config.get('config', {}),
-                    next_node=node_config.get('next_node'))
+                if issubclass(node_class, InputsCollector):
+                    node = self._create_inputs_collector_node(node_config, config, entities, node_class)
+                else:
+                    node = node_class(node_config['name'], **node_config.get('config', {}), next_node=node_config.get('next_node'))
 
             dialog_controller.add_node(node)
             if node_config.get('intent_trigger'):
@@ -104,3 +88,28 @@ class DialogControlBuilder:
             dialog_controller.set_fallback_node(fallback_node)
 
         return dialog_controller
+
+    @staticmethod
+    def _create_inputs_collector_node(
+            node_config: Dict[Text, Any],
+            config: Dict[Text, Any],
+            entities: Dict[Text, Any],
+            node_class: Type):
+
+        node_entities = node_config['config'].pop('entities', [])
+        entity_extractors = ExtractorPipelineBuilder(node_entities, entities, **config).build()
+        escape_intent_action = node_config['config'].pop('escape_intent_action', [])
+        validator = node_config['config'].pop('validator', None)
+        inputs = node_config['config'].pop('inputs', {})
+
+        if validator:
+            validator = import_from_path(validator)
+
+        return node_class(
+            **node_config['config'],
+            name=node_config['name'],
+            inputs=inputs,
+            entity_extractors=entity_extractors,
+            escape_intent_action=escape_intent_action,
+            validator=validator,
+            next_node=node_config.get('next_node'))

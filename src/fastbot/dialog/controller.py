@@ -95,6 +95,7 @@ class DialogController:
 
             step += 1
 
+            user_context.set_status(action_name, result.status)
             if result.status == NodeStatus.DONE:
                 continue
             elif result.status == NodeStatus.WAITING:

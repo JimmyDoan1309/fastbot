@@ -19,6 +19,22 @@ MONGO_CONTEXT_LOCK_TIMEOUT = os.getenv('MONGO_CONTEXT_LOCK_TIMEOUT', 10)
 
 
 class MongoContextMananger(MemoryContextManager):
+    """
+    Extend of MemoryContextManager but with MongoDB as persistence layer.
+    call load() when start handle the message and save() at the end when all
+    actions are executed.
+
+    - context_data (nodes' data, history, callstack) is locked per message_id (per conversation). 
+        Which allow for multiple bot instances running at the sametime to avoid race condition and
+        override each other conversation state. 
+
+        This usually happen when users send a new message before the previous message fully handle.
+
+    - user_data is not lock, to allow for multiple bot can access the same user data at the sametime.
+        Therefore it is possible to override users' data accidently!
+
+    """
+
     def __init__(self, uri: Text = None, **kwargs):
         super().__init__(**kwargs)
         if uri:
@@ -134,4 +150,5 @@ class MongoContextMananger(MemoryContextManager):
                 'lockOwner': None,
             }}
         )
-        self.users_col.update_one({'_id': self.user_id}, {'$set': {'data': self.user_data}})
+        update_userdata = {f'data.{key}': val for key, val in self.user_data.items()}
+        self.users_col.update_one({'_id': self.user_id}, {'$set': update_userdata})
