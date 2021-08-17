@@ -21,6 +21,7 @@ OVERRIDE_INPUT_FUNCTION = 'when_input_overrided'
 COLLECTED_INPUTS = 'collected_inputs'
 CURRENT_MISSING_INPUT = 'current_missing_input'
 STEP_COUNT = 'step_count'
+PROMPT = 'prompt'
 
 
 class InputsCollector(BaseNode):
@@ -65,10 +66,11 @@ class InputsCollector(BaseNode):
 
     def on_message(self, context: ContextManager) -> NodeResult:
         message_intent = context.turn_context.message.intent
+        node_state = context.get_data(self.name)
+        node_state[PROMPT] = True
         for escape_intent in self.escape_intent_action:
             if escape_intent.intent == message_intent:
                 # input asking count should not increase if escape
-                node_state = context.get_data(self.name)
                 current_missing_input = node_state[CURRENT_MISSING_INPUT]
                 node_state[STEP_COUNT][current_missing_input] -= 1
 
@@ -87,7 +89,8 @@ class InputsCollector(BaseNode):
             context.set_result(self.name, collected_inputs)
             return NodeResult(NodeStatus.DONE, self.next_node)
         else:
-            self.prompt(missing_input, context)
+            if node_state[PROMPT]:
+                self.prompt(missing_input, context)
 
             node_state = context.get_data(self.name)
             node_state[CURRENT_MISSING_INPUT] = missing_input.name

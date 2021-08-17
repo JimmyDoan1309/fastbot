@@ -29,6 +29,7 @@ class ContextManager:
         self.response_function = kwargs.get('response_function')
         self.user_id = kwargs.get('user_id') or 'default'
         self.conversation_id = kwargs.get('conversation_id')
+        self.user_data = {}
 
     def add_response(self, response: Response):
         try:
