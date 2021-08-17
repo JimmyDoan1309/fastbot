@@ -101,6 +101,7 @@ class DialogControlBuilder:
         escape_intent_action = node_config['config'].pop('escape_intent_action', [])
         validator = node_config['config'].pop('validator', None)
         inputs = node_config['config'].pop('inputs', {})
+        random_inputs_prompt_order = node_config['config'].pop('random_inputs_prompt_order', False)
 
         if validator:
             validator = import_from_path(validator)
@@ -112,4 +113,5 @@ class DialogControlBuilder:
             entity_extractors=entity_extractors,
             escape_intent_action=escape_intent_action,
             validator=validator,
+            random_inputs_prompt_order=random_inputs_prompt_order,
             next_node=node_config.get('next_node'))

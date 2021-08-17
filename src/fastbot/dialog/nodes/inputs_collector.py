@@ -46,6 +46,7 @@ class InputsCollector(BaseNode):
         self.validator = validator
         if not self.validator:
             self.validator = lambda v, c: None
+        self.random_inputs_prompt_order = kwargs.get('random_inputs_prompt_order', False)
 
     def inputs_mapping(self, context: ContextManager) -> Dict[Text, InputConfig]:
         mapping = {}
@@ -120,9 +121,15 @@ class InputsCollector(BaseNode):
         context.add_response(Response(response))
 
     def _get_missing_input(self, collected_inputs: Dict[Text, Any], context: ContextManager) -> Optional[InputConfig]:
+        missing_inputs = []
         for _input in self.required_inputs:
             if _input.name not in collected_inputs and not _input.optional:
-                return _input
+                if not self.random_inputs_prompt_order:
+                    return _input
+                missing_inputs.append(_input)
+
+        if missing_inputs:
+            return random.choice(missing_inputs)
 
         # Validate all inputs
         missing_inputs = self.validator(collected_inputs, context)
