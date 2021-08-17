@@ -151,4 +151,5 @@ class MongoContextMananger(MemoryContextManager):
             }}
         )
         update_userdata = {f'data.{key}': val for key, val in self.user_data.items()}
-        self.users_col.update_one({'_id': self.user_id}, {'$set': update_userdata})
+        if update_userdata:
+            self.users_col.update_one({'_id': self.user_id}, {'$set': update_userdata})
