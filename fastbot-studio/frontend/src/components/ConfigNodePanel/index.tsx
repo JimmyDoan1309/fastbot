@@ -86,7 +86,7 @@ const SelectedElementConfig: React.FC<Props> = ({
           onChange={handleChange}
         />
       </div>
-      {node.type === "intent" ? (
+      {node.type === "intent" || node.type === "response" ? (
         <React.Fragment>
           <div className="sample">Samples</div>
           <div className="sample-list">
