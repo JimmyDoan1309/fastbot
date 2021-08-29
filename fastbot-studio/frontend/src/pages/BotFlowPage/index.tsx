@@ -184,7 +184,7 @@ const DnDFlow = () => {
       });
       const newId = getId();
       let newNode: Node;
-      if (type === "intent") {
+      if (type === "intent" || type === "response") {
         newNode = {
           id: newId,
           type,
