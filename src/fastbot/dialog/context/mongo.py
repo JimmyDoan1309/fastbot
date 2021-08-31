@@ -18,7 +18,7 @@ USERDATA_COLLECTION_NAME = 'users'
 MONGO_CONTEXT_LOCK_TIMEOUT = os.getenv('MONGO_CONTEXT_LOCK_TIMEOUT', 10)
 
 
-class MongoContextMananger(MemoryContextManager):
+class MongoContextManager(MemoryContextManager):
     """
     Extend of MemoryContextManager but with MongoDB as persistence layer.
     call load() when start handle the message and save() at the end when all
