@@ -57,10 +57,26 @@ const DnDFlow = () => {
   const [totalElements, setElements] = useState<Elements>(initialElements);
   const [selectedElement, setSelectedElement] = useState<FlowElement | null>();
 
-  const onChange = (id: string, newLable: string) => {
+  const onChange = (id: string, newLabel: string) => {
     const updateElements = totalElements.map((element) => {
       if (element.id === id) {
-        element.data.label = newLable;
+        element.data.label = newLabel;
+      }
+      return element;
+    });
+    setElements(updateElements);
+  };
+
+  const onSaveProcessNode = (
+    id: string,
+    newLabel: string,
+    codeEditorValue: string
+  ) => {
+    const updateElements = totalElements.map((element) => {
+      if (element.id === id) {
+        element.data.label = newLabel;
+        element.data.codeEditorValue = codeEditorValue;
+        setSelectedElement(element);
       }
       return element;
     });
@@ -195,6 +211,17 @@ const DnDFlow = () => {
             samples: [],
           },
         };
+      } else if (type === "process") {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            label: `${capitalizeFirstLetter(type)} Node `,
+            codeEditorValue: "",
+          },
+        };
       } else {
         newNode = {
           id: newId,
@@ -220,6 +247,7 @@ const DnDFlow = () => {
             onChange={onChange}
             onAddNewSample={onAddNewSample}
             onDeleteSample={onDeleteSample}
+            onSaveProcessNode={onSaveProcessNode}
           />
         ) : null}
         {/* Reactflow Wrapper */}
