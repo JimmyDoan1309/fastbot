@@ -9,6 +9,7 @@ import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
 import React, { useState } from "react";
 import { Node } from "react-flow-renderer";
+import MyAceEditor from "../MyAceEditor";
 import "./index.css";
 
 interface Props {
@@ -16,6 +17,11 @@ interface Props {
   onChange: (id: string, newLabel: string) => void;
   onAddNewSample: (id: string, newSample: string) => void;
   onDeleteSample: (id: string, sampleId: number) => void;
+  onSaveProcessNode: (
+    id: string,
+    newLabel: string,
+    codeEditorValue: string
+  ) => void;
 }
 
 interface SampleProps {
@@ -52,12 +58,17 @@ const SelectedElementConfig: React.FC<Props> = ({
   onChange,
   onAddNewSample,
   onDeleteSample,
+  onSaveProcessNode,
 }) => {
   const [label, setLabel] = useState(node.data.label);
   const [newSample, setNewSample] = useState("");
+  const [codeEditorValue, setCodeEditorValue] = useState("");
 
   React.useEffect(() => {
     setLabel(node.data.label);
+    if (node.data.codeEditorValue) {
+      setCodeEditorValue(node.data.codeEditorValue);
+    }
   }, [node]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,8 +80,16 @@ const SelectedElementConfig: React.FC<Props> = ({
     onAddNewSample(node.id, newSample);
   };
 
+  const handleChangeCodeEditor = (newValue: string) => {
+    setCodeEditorValue(newValue);
+  };
+
   const handleSave = () => {
-    onChange(node.id, label);
+    if (node.type !== "process") {
+      onChange(node.id, label);
+    } else {
+      onSaveProcessNode(node.id, label, codeEditorValue);
+    }
   };
 
   return (
@@ -128,6 +147,12 @@ const SelectedElementConfig: React.FC<Props> = ({
             </Grid>
           </div>
         </React.Fragment>
+      ) : null}
+      {node.type === "process" ? (
+        <MyAceEditor
+          value={codeEditorValue}
+          onChange={handleChangeCodeEditor}
+        />
       ) : null}
       <Button
         variant="contained"

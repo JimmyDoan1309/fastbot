@@ -49,7 +49,7 @@
   }
 
   .dndflow .left-aside {
-    width: 30%;
-    max-width: 270px;
+    width: 400px;
+    max-width: none;
   }
 }
