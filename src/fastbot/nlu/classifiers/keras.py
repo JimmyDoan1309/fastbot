@@ -230,6 +230,8 @@ class KerasClassifier(Classifier):
         self.intents = metadata['intents']
         self.max_sequence_len = metadata['max_sequence_len']
         self.number_of_intent = len(self.intents)
+        self.confident_threshold = metadata['confident_threshold']
+        self.ambiguity_threshold = metadata['ambiguity_threshold']
         self.intent2idx = {intent: idx for idx, intent in enumerate(self.intents)}
         self.idx2intent = {idx: intent for intent, idx in self.intent2idx.items()}
         self._model_mode = INFERENCING
